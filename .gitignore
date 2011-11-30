@@ -1,0 +1,10 @@
+.DS_Store*
+Thumbs.db
+Icon?
+ehthumbs.db
+*.com
+*.class
+*.dll
+*.exe
+*.o
+*.so
