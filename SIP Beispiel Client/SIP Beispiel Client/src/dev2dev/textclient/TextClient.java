@@ -202,7 +202,19 @@ public class TextClient extends JFrame implements MessageProcessor {
 
 	private void callBtnActionPerformed(ActionEvent evt) {
 		System.out.println("Calling...");
-		sipLayer.startCall();
+		String to = this.toAddress.getText();
+		try {
+			sipLayer.startCall(to);
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InvalidArgumentException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (SipException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	public void processMessage(String sender, String message) {
