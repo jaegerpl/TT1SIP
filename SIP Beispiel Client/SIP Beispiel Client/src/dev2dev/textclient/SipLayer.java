@@ -1,6 +1,7 @@
 package dev2dev.textclient;
 
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Properties;
@@ -248,6 +249,18 @@ public class SipLayer implements SipListener {
 	}
 
 	public void startCall() {
+		try {
+			String localHost = InetAddress.getLocalHost().getHostName();
+			// FŸr jede Netzwerkkarte
+			for (InetAddress ia : InetAddress.getAllByName(localHost))
+			// IP-Adresse ausgeben
+			System.out.println(ia);
+			
+			}
+			catch (Exception e) {
+			System.out.println(e);
+			}
+		
 		// Create and send INVITE Request 
 		//callIdHeader = sipProvider.getNewCallIdHeader(); 
 		//cSeqHeader = headerFactory.createCSeqHeader(1, Request.INVITE); 
