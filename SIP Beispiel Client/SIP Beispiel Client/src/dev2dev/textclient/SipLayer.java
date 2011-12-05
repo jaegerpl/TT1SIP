@@ -273,8 +273,7 @@ public class SipLayer implements SipListener {
 
 		callIdHeader = sipProvider.getNewCallId();
 
-		cSeqHeader = headerFactory.createCSeqHeader(1,
-				Request.MESSAGE);
+		cSeqHeader = headerFactory.createCSeqHeader(1, Request.MESSAGE);
 
 		maxForwards = headerFactory.createMaxForwardsHeader(70);
 		

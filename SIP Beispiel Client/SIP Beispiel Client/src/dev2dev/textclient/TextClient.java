@@ -201,20 +201,29 @@ public class TextClient extends JFrame implements MessageProcessor {
 	}
 
 	private void callBtnActionPerformed(ActionEvent evt) {
-		System.out.println("Calling...");
-		String to = this.toAddress.getText();
-		try {
-			sipLayer.startCall(to);
-		} catch (ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (InvalidArgumentException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (SipException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		if(callBtn.getText() == "Call"){
+			System.out.println("Calling...");
+			String to = this.toAddress.getText();
+			try {
+				callBtn.setText("Hang up");
+				sipLayer.startCall(to);
+			} catch (ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (InvalidArgumentException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (SipException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		} else if(callBtn.getText() == "Hang up"){
+			callBtn.setText("Call");
+			System.out.println("Hanging up...");
+		} else {
+			System.out.println("Fehler im Call-HangUp-Handling");
 		}
+		
 	}
 
 	public void processMessage(String sender, String message) {
