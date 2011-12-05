@@ -54,6 +54,7 @@ public class TextClient
     private JTextArea receivedMessages;
     private JScrollPane receivedScrollPane;
     private JButton sendBtn;
+    private JButton callBtn;
     private JLabel sendLbl;
     private JTextField sendMessages;
     private JTextField toAddress;
@@ -115,6 +116,7 @@ public class TextClient
         toLbl = new JLabel();
         toAddress = new JTextField();
         sendBtn = new JButton();
+        callBtn = new JButton();
 
         getContentPane().setLayout(null);
 
@@ -173,6 +175,17 @@ public class TextClient
         getContentPane().add(sendBtn);
         sendBtn.setBounds(200, 255, 75, 25);
 
+        
+        callBtn.setText("Call");
+        callBtn.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                callBtnActionPerformed(evt);
+            }
+        });
+
+        getContentPane().add(callBtn);
+        callBtn.setBounds(1, 255, 75, 25);
+
         java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();
         setBounds((screenSize.width-288)/2, (screenSize.height-310)/2, 288, 320);
     }
@@ -191,6 +204,11 @@ public class TextClient
         }
         			
     }
+    
+    private void callBtnActionPerformed(ActionEvent evt) {
+		System.out.println("Calling...");
+		
+	}
 
     public void processMessage(String sender, String message)
     {

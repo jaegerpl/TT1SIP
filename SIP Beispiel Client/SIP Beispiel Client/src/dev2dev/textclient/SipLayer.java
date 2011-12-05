@@ -82,6 +82,7 @@ public class SipLayer implements SipListener {
 	addressFactory = sipFactory.createAddressFactory();
 	messageFactory = sipFactory.createMessageFactory();
 
+	@SuppressWarnings("deprecation")
 	ListeningPoint tcp = sipStack.createListeningPoint(port, "tcp");
 	ListeningPoint udp = sipStack.createListeningPoint(port, "udp");
 
