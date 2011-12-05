@@ -68,7 +68,7 @@ public class TextClient extends JFrame implements MessageProcessor {
 			int port = Integer.parseInt(args[1]);
 			String localHost = InetAddress.getLocalHost().getHostName();
 			String ip = InetAddress.getByName(localHost).getHostAddress();
-
+			
 			SipLayer sipLayer = new SipLayer(username, ip, port);
 			TextClient tc = new TextClient(sipLayer);
 			sipLayer.setMessageProcessor(tc);
