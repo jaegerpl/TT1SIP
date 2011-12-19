@@ -270,6 +270,16 @@ public class SipLayer implements SipListener {
 		return dia;
 	}
 
+	/**
+	 * Registers the Server with the SIP Proxy
+	 * 
+	 * @param proxyAddress
+	 * @param proxyPort
+	 * @return
+	 * @throws ParseException
+	 * @throws InvalidArgumentException
+	 * @throws SipException
+	 */
 	public String register(String proxyAddress, int proxyPort)
 			throws ParseException, InvalidArgumentException, SipException {
 		SipURI from = addressFactory.createSipURI(getUsername(), getHost()
