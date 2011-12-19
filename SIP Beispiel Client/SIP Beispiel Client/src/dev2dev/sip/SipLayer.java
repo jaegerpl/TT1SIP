@@ -114,20 +114,10 @@ public class SipLayer implements SipListener {
 	 * This method uses the SIP stack to send a message.
 	 */
 	public void sendMessage(String to, String message) throws ParseException, InvalidArgumentException, SipException {
-
-		setupHeaders(to);
-
-		// Putting REQUEST together
 		Request request = messageFactory.createRequest(requestURI, Request.MESSAGE, callIdHeader, cSeqHeader,
 				fromHeader, toHeader, viaHeaders, maxForwards);
-
-		// Adding ContactHeader to REQUEST
-		contactURI = addressFactory.createSipURI(getUsername(), getHost());
-		contactURI.setPort(getPort());
-		Address contactAddress = addressFactory.createAddress(contactURI);
-		contactAddress.setDisplayName(getUsername());
-		ContactHeader contactHeader = headerFactory.createContactHeader(contactAddress);
-		request.addHeader(contactHeader);
+		
+		setupHeaders(request, Request.MESSAGE, to);
 
 		// Adding MESSAGE to REQUEST
 		request.setContent(message, contentTypeHeader);
@@ -136,6 +126,67 @@ public class SipLayer implements SipListener {
 		sipProvider.sendRequest(request);
 	}
 
+	public Dialog startCall(String to) throws ParseException, InvalidArgumentException, SipException {
+
+		Request invite = messageFactory.createRequest("INVITE " + to + " SIP/2.0\n");
+		setupHeaders(invite, Request.INVITE, to);
+
+		// Start Transaction
+		ClientTransaction trans;
+
+		trans = sipProvider.getNewClientTransaction(invite);
+		Dialog dia = trans.getDialog();
+		trans.sendRequest();
+		return dia;
+	}
+	
+	private void setupHeaders(Request req, String requestType, String to) throws ParseException, InvalidArgumentException {
+
+		// Setting fromURI and FromHeader
+		fromURI = addressFactory.createSipURI(getUsername(), getHost() + ":" + getPort());
+		Address fromNameAddress = addressFactory.createAddress(fromURI);
+		fromNameAddress.setDisplayName(getUsername());
+		fromHeader = headerFactory.createFromHeader(fromNameAddress, "textclientv1.0");
+		req.addHeader(fromHeader);
+
+		// Setting toURI and ToHeader
+		toUsername = to.substring(to.indexOf(":") + 1, to.indexOf("@"));
+		toAddress = to.substring(to.indexOf("@") + 1);
+
+		toURI = addressFactory.createSipURI(toUsername, toAddress);
+		Address toNameAddress = addressFactory.createAddress(toURI);
+		toNameAddress.setDisplayName(toUsername);
+		toHeader = headerFactory.createToHeader(toNameAddress, null);
+		req.addHeader(toHeader);
+
+		// Setting RequestURI
+		requestURI = addressFactory.createSipURI(toUsername, toAddress);
+		requestURI.setTransportParam("udp");
+		
+		// Setting ContactHeader
+		contactURI = addressFactory.createSipURI(getUsername(), getHost());
+		contactURI.setPort(getPort());
+		Address contactAddress = addressFactory.createAddress(contactURI);
+		contactAddress.setDisplayName(getUsername());
+		ContactHeader contactHeader = headerFactory.createContactHeader(contactAddress);
+		req.addHeader(contactHeader);
+
+		// Setting viaHeaders
+		viaHeaders = new ArrayList<ViaHeader>();
+		ViaHeader viaHeader = headerFactory.createViaHeader(getHost(), getPort(), "udp", "branch1");
+		viaHeaders.add(viaHeader);
+		req.addHeader(viaHeader);
+		callIdHeader = sipProvider.getNewCallId();
+		req.addHeader(callIdHeader);
+		cSeqHeader = headerFactory.createCSeqHeader(1l, requestType);
+		req.addHeader(cSeqHeader);
+		maxForwards = headerFactory.createMaxForwardsHeader(70);
+		req.addHeader(maxForwards);
+		contentTypeHeader = headerFactory.createContentTypeHeader("text", "plain");
+		req.addHeader(contentTypeHeader);
+		
+	}
+	
 	/** This method is called by the SIP stack when a response arrives. */
 	public void processResponse(ResponseEvent evt) {
 		Response response = evt.getResponse();
@@ -227,35 +278,6 @@ public class SipLayer implements SipListener {
 		messageProcessor = newMessageProcessor;
 	}
 
-	public Dialog startCall(String to) throws ParseException, InvalidArgumentException, SipException {
-
-		// Create and send INVITE Request
-		setupHeaders(to);
-
-		Request invite = messageFactory.createRequest("INVITE " + to + " SIP/2.0\n");
-		invite.addHeader(sipProvider.getNewCallId());
-		invite.addHeader(headerFactory.createCSeqHeader(1l, Request.INVITE));
-		fromURI = addressFactory.createSipURI(getUsername(), getHost() + ":" + getPort());
-		invite.addHeader(headerFactory.createFromHeader(addressFactory.createAddress(fromURI), "tag"));
-		invite.addHeader((ViaHeader) viaHeaders.get(0));
-		invite.addHeader(toHeader);
-		invite.addHeader(maxForwards);
-		contactURI = addressFactory.createSipURI(getUsername(), getHost());
-		contactURI.setPort(getPort());
-		Address contactAddress = addressFactory.createAddress(contactURI);
-		contactAddress.setDisplayName(getUsername());
-		ContactHeader contactHeader = headerFactory.createContactHeader(contactAddress);
-		invite.addHeader(contactHeader);
-
-		// Start Transaction
-		ClientTransaction trans;
-
-		trans = sipProvider.getNewClientTransaction(invite);
-		Dialog dia = trans.getDialog();
-		trans.sendRequest();
-		return dia;
-	}
-
 	/**
 	 * Registers the Server with the SIP Proxy
 	 * 
@@ -298,54 +320,16 @@ public class SipLayer implements SipListener {
 		return callIdHeader.getCallId();
 	}
 
-	private void setupHeaders(String to) throws ParseException, InvalidArgumentException {
-
-		// Setting fromURI and FromHeader
-		fromURI = addressFactory.createSipURI(getUsername(), getHost() + ":" + getPort());
-		Address fromNameAddress = addressFactory.createAddress(fromURI);
-		fromNameAddress.setDisplayName(getUsername());
-		fromHeader = headerFactory.createFromHeader(fromNameAddress, "textclientv1.0");
-
-		// Setting toURI and ToHeader
-		toUsername = to.substring(to.indexOf(":") + 1, to.indexOf("@"));
-		toAddress = to.substring(to.indexOf("@") + 1);
-
-		toURI = addressFactory.createSipURI(toUsername, toAddress);
-		Address toNameAddress = addressFactory.createAddress(toURI);
-		toNameAddress.setDisplayName(toUsername);
-		toHeader = headerFactory.createToHeader(toNameAddress, null);
-
-		// Setting RequestURI
-		requestURI = addressFactory.createSipURI(toUsername, toAddress);
-		requestURI.setTransportParam("udp");
-
-		// Setting viaHeaders
-		viaHeaders = new ArrayList<ViaHeader>();
-		ViaHeader viaHeader = headerFactory.createViaHeader(getHost(), getPort(), "udp", "branch1");
-		viaHeaders.add(viaHeader);
-
-		callIdHeader = sipProvider.getNewCallId();
-
-		cSeqHeader = headerFactory.createCSeqHeader(1l, Request.MESSAGE);
-
-		maxForwards = headerFactory.createMaxForwardsHeader(70);
-
-		contentTypeHeader = headerFactory.createContentTypeHeader("text", "plain");
-	}
-
 	public void hangUp(Dialog serverDialog) {
 		Request bye;
 		try {
 			bye = serverDialog.createRequest(Request.BYE);
 			serverDialog.sendRequest(this.sipProvider.getNewClientTransaction(bye));
 		} catch (TransactionDoesNotExistException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (TransactionUnavailableException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (SipException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
