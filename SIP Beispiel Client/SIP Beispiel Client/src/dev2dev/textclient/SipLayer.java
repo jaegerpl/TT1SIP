@@ -234,10 +234,15 @@ public class SipLayer implements SipListener {
 
 	public void startCall(String to) throws ParseException, InvalidArgumentException, SipException {
 		
-		// Create and send INVITE Request 
-		CSeqHeader cSeqHeader = headerFactory.createCSeqHeader(1, Request.INVITE); 
+		// Create and send INVITE Request
+		setupHeaders(to);
 
-		Request invite = messageFactory.createRequest(Request.INVITE); 
+		Request invite = messageFactory.createRequest("INVITE " + to + " SIP/2.0\n");
+		invite.addHeader(sipProvider.getNewCallId());
+        invite.addHeader(headerFactory.createCSeqHeader(1, Request.INVITE));
+        fromURI = addressFactory.createSipURI(getUsername(), getHost() + ":" + getPort());
+        invite.addHeader(headerFactory.createFromHeader(addressFactory.createAddress(fromURI), "tag"));
+        invite.addHeader((ViaHeader) viaHeaders.get(0));
 
 		sipProvider.sendRequest(invite);
 	}
