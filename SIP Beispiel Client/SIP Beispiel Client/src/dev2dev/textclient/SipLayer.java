@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.Properties;
 import java.util.TooManyListenersException;
 
+import javax.sip.ClientTransaction;
+import javax.sip.Dialog;
 import javax.sip.DialogTerminatedEvent;
 import javax.sip.IOExceptionEvent;
 import javax.sip.InvalidArgumentException;
@@ -23,7 +25,9 @@ import javax.sip.SipListener;
 import javax.sip.SipProvider;
 import javax.sip.SipStack;
 import javax.sip.TimeoutEvent;
+import javax.sip.TransactionDoesNotExistException;
 import javax.sip.TransactionTerminatedEvent;
+import javax.sip.TransactionUnavailableException;
 import javax.sip.TransportNotSupportedException;
 import javax.sip.address.Address;
 import javax.sip.address.AddressFactory;
@@ -232,7 +236,7 @@ public class SipLayer implements SipListener {
 		messageProcessor = newMessageProcessor;
 	}
 
-	public void startCall(String to) throws ParseException, InvalidArgumentException, SipException {
+	public Dialog startCall(String to) throws ParseException, InvalidArgumentException, SipException {
 		
 		// Create and send INVITE Request
 		setupHeaders(to);
@@ -244,7 +248,13 @@ public class SipLayer implements SipListener {
         invite.addHeader(headerFactory.createFromHeader(addressFactory.createAddress(fromURI), "tag"));
         invite.addHeader((ViaHeader) viaHeaders.get(0));
 
-		sipProvider.sendRequest(invite);
+        // Start Transaction
+        ClientTransaction trans;
+        
+        trans = sipProvider.getNewClientTransaction(invite);
+        Dialog dia = trans.getDialog();
+        trans.sendRequest();
+        return dia;
 	}
 	
 	private void setupHeaders(String to) throws ParseException, InvalidArgumentException{
@@ -283,6 +293,24 @@ public class SipLayer implements SipListener {
 		maxForwards = headerFactory.createMaxForwardsHeader(70);
 		
 		contentTypeHeader = headerFactory.createContentTypeHeader("text", "plain");
+	}
+
+	public void hangUp(Dialog serverDialog) {
+		Request bye;
+		try {
+			bye = serverDialog.createRequest(Request.BYE);
+			serverDialog.sendRequest(this.sipProvider.getNewClientTransaction(bye));
+		} catch (TransactionDoesNotExistException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (TransactionUnavailableException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (SipException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 	}
 
 }

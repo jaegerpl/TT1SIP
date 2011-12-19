@@ -10,6 +10,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Properties;
 
+import javax.sip.Dialog;
 import javax.sip.InvalidArgumentException;
 import javax.sip.ListeningPoint;
 import javax.sip.RequestEvent;
@@ -57,6 +58,8 @@ public class TextClient extends JFrame implements MessageProcessor {
 	private JTextField toAddress;
 	private JLabel toLbl;
 
+	private Dialog serverDialog;
+	
 	public static void main(String[] args) {
 		if (args.length != 2) {
 			printUsage();
@@ -206,7 +209,7 @@ public class TextClient extends JFrame implements MessageProcessor {
 			String to = this.toAddress.getText();
 			try {
 				callBtn.setText("Hang up");
-				sipLayer.startCall(to);
+				serverDialog = sipLayer.startCall(to);
 			} catch (ParseException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -220,6 +223,7 @@ public class TextClient extends JFrame implements MessageProcessor {
 		} else if(callBtn.getText() == "Hang up"){
 			callBtn.setText("Call");
 			System.out.println("Hanging up...");
+			sipLayer.hangUp(serverDialog);
 		} else {
 			System.out.println("Fehler im Call-HangUp-Handling");
 		}
