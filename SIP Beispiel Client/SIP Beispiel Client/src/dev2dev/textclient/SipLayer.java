@@ -247,6 +247,14 @@ public class SipLayer implements SipListener {
         fromURI = addressFactory.createSipURI(getUsername(), getHost() + ":" + getPort());
         invite.addHeader(headerFactory.createFromHeader(addressFactory.createAddress(fromURI), "tag"));
         invite.addHeader((ViaHeader) viaHeaders.get(0));
+        invite.addHeader(toHeader);
+        invite.addHeader(maxForwards);
+        contactURI = addressFactory.createSipURI(getUsername(),	getHost());
+		contactURI.setPort(getPort());
+		Address contactAddress = addressFactory.createAddress(contactURI);
+		contactAddress.setDisplayName(getUsername());
+		ContactHeader contactHeader = headerFactory.createContactHeader(contactAddress);
+		invite.addHeader(contactHeader);
 
         // Start Transaction
         ClientTransaction trans;
