@@ -43,7 +43,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
-public class TextClient extends JFrame implements MessageProcessor {
+public class TextServer extends JFrame implements MessageProcessor {
 	private SipLayer sipLayer;
 
 	private JTextField fromAddress;
@@ -73,7 +73,7 @@ public class TextClient extends JFrame implements MessageProcessor {
 			String ip = InetAddress.getByName(localHost).getHostAddress();
 			
 			SipLayer sipLayer = new SipLayer(username, ip, port);
-			TextClient tc = new TextClient(sipLayer);
+			TextServer tc = new TextServer(sipLayer);
 			sipLayer.setMessageProcessor(tc);
 
 			tc.show();
@@ -94,7 +94,7 @@ public class TextClient extends JFrame implements MessageProcessor {
 		System.out.println("  java -jar textclient.jar snoopy71 5061");
 	}
 
-	public TextClient(SipLayer sip) {
+	public TextServer(SipLayer sip) {
 		super();
 		sipLayer = sip;
 		initWindow();
