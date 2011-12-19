@@ -4,6 +4,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.text.ParseException;
@@ -201,7 +202,7 @@ public class TextClient extends JFrame implements MessageProcessor {
 		joinIGMPButton.setText("JoinGroup");
 		joinIGMPButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
-				callBtnActionPerformed(evt);
+				IGMPJoinButtonActionPerformed(evt);
 			}
 		});
 
@@ -239,12 +240,7 @@ public class TextClient extends JFrame implements MessageProcessor {
 	private void callBtnActionPerformed(ActionEvent evt) {
 		
 		// Calling (INVITE)
-		// joining MC Group
-		if(connectServerButton.getText() == "Call"){
-			
-			// Join IGMP Group
-			// igmpListener.initialize(ip, port);
-			// Send invite to a server
+		if(connectServerButton.getText() == "Call"){		
 			System.out.println("Calling...");
 			String to = this.toAddress.getText();
 			try {
@@ -257,16 +253,38 @@ public class TextClient extends JFrame implements MessageProcessor {
 			} catch (SipException e) {
 				e.printStackTrace();
 			}
-			
+			System.out.println("Done. Call established");
 			// Hanging UP (BYE)
 		} else if(connectServerButton.getText() == "Hang up"){
 			connectServerButton.setText("Call");
 			System.out.println("Hanging up...");
 			sipLayer.hangUp(serverDialog);
+			System.out.println("Done hanging up.");
 		} else {
 			System.out.println("Fehler im Call-HangUp-Handling");
 		}
 		
+	}
+	
+	private void IGMPJoinButtonActionPerformed(ActionEvent evt) {
+		if(joinIGMPButton.getText() == "JoinGroup"){
+			System.out.println("Joining Group...");
+			// Join IGMP Group
+			try {
+				igmpListener.initialize(InetAddress.getByName("239.238.237.17"), 9017);
+			} catch (UnknownHostException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			joinIGMPButton.setText("LeaveGroup");
+			System.out.println("Done. Group Joined");
+		} else if(joinIGMPButton.getText() == "LeaveGroup"){
+			System.out.println("Leaving Group.");
+			igmpListener.stop();
+			joinIGMPButton.setText("JoinGroup");
+			System.out.println("Done leavig Group.");
+		}
 	}
 
 	public void processMessage(String sender, String message) {
