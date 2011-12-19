@@ -1,4 +1,4 @@
-package dev2dev.textclient;
+package dev2dev.sip;
 
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -38,6 +38,7 @@ import javax.sip.header.ViaHeader;
 import javax.sip.message.MessageFactory;
 import javax.sip.message.Request;
 import javax.sip.message.Response;
+
 
 public class SipLayer implements SipListener {
 

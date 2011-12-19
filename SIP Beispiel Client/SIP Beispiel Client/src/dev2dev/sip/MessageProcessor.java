@@ -1,4 +1,4 @@
-package dev2dev.server;
+package dev2dev.sip;
 
 public interface MessageProcessor
 {

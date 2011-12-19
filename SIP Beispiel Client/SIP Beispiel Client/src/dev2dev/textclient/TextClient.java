@@ -43,6 +43,9 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
+import dev2dev.sip.MessageProcessor;
+import dev2dev.sip.SipLayer;
+
 public class TextClient extends JFrame implements MessageProcessor {
 	private SipLayer sipLayer;
 

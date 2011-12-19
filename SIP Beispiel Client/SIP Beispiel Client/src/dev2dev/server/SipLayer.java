@@ -39,6 +39,9 @@ import javax.sip.message.MessageFactory;
 import javax.sip.message.Request;
 import javax.sip.message.Response;
 
+import dev2dev.sip.MessageProcessor;
+
+
 public class SipLayer implements SipListener {
 
 	private MessageProcessor messageProcessor;
