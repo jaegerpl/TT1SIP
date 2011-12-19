@@ -43,25 +43,32 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
+import dev2dev.igmp.IGMPListener;
 import dev2dev.sip.MessageProcessor;
 import dev2dev.sip.SipLayer;
 
 public class TextClient extends JFrame implements MessageProcessor {
 	private SipLayer sipLayer;
 
+	// GUI STUFF
 	private JTextField fromAddress;
 	private JLabel fromLbl;
 	private JLabel receivedLbl;
 	private JTextArea receivedMessages;
 	private JScrollPane receivedScrollPane;
 	private JButton sendBtn;
-	private JButton callBtn;
+	private JButton connectServerButton;
+	private JButton joinIGMPButton;
 	private JLabel sendLbl;
 	private JTextField sendMessages;
 	private JTextField toAddress;
 	private JLabel toLbl;
 
-	private Dialog serverDialog;
+	// SIP STUFF
+	private Dialog serverDialog;	// the dialog received when sending INVITE to a server
+	
+	// IGMP STUFF
+	static IGMPListener igmpListener;
 	
 	public static void main(String[] args) {
 		if (args.length != 2) {
@@ -75,10 +82,13 @@ public class TextClient extends JFrame implements MessageProcessor {
 			String localHost = InetAddress.getLocalHost().getHostName();
 			String ip = InetAddress.getByName(localHost).getHostAddress();
 			
+			igmpListener = new IGMPListener();
+			
+			// Starting TextClient
 			SipLayer sipLayer = new SipLayer(username, ip, port);
 			TextClient tc = new TextClient(sipLayer);
 			sipLayer.setMessageProcessor(tc);
-
+			
 			tc.show();
 		} catch (Throwable e) {
 			System.out.println("Problem initializing the SIP stack.");
@@ -117,7 +127,8 @@ public class TextClient extends JFrame implements MessageProcessor {
 		toLbl = new JLabel();
 		toAddress = new JTextField();
 		sendBtn = new JButton();
-		callBtn = new JButton();
+		connectServerButton = new JButton();
+		joinIGMPButton = new JButton();
 
 		getContentPane().setLayout(null);
 
@@ -177,15 +188,25 @@ public class TextClient extends JFrame implements MessageProcessor {
 		getContentPane().add(sendBtn);
 		sendBtn.setBounds(200, 255, 75, 25);
 
-		callBtn.setText("Call");
-		callBtn.addActionListener(new ActionListener() {
+		connectServerButton.setText("Con2Server");
+		connectServerButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
 				callBtnActionPerformed(evt);
 			}
 		});
 
-		getContentPane().add(callBtn);
-		callBtn.setBounds(1, 255, 75, 25);
+		getContentPane().add(connectServerButton);
+		connectServerButton.setBounds(1, 255, 100, 25);
+		
+		joinIGMPButton.setText("JoinGroup");
+		joinIGMPButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				callBtnActionPerformed(evt);
+			}
+		});
+
+		getContentPane().add(joinIGMPButton);
+		joinIGMPButton.setBounds(102, 255, 100, 25);		
 
 		java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit()
 				.getScreenSize();
@@ -206,25 +227,40 @@ public class TextClient extends JFrame implements MessageProcessor {
 		}
 	}
 
+	/**
+	 * When pressing "Call" the TextClient will join an IGMP Group and send an invite to a server
+	 * via the proxy.
+	 * 
+	 * When pressing "Hang Up" the TextClient will send a BYE to the server but will stay registered 
+	 * in the IGMP Group.
+	 * 
+	 * @param evt
+	 */
 	private void callBtnActionPerformed(ActionEvent evt) {
-		if(callBtn.getText() == "Call"){
+		
+		// Calling (INVITE)
+		// joining MC Group
+		if(connectServerButton.getText() == "Call"){
+			
+			// Join IGMP Group
+			// igmpListener.initialize(ip, port);
+			// Send invite to a server
 			System.out.println("Calling...");
 			String to = this.toAddress.getText();
 			try {
-				callBtn.setText("Hang up");
+				connectServerButton.setText("Hang up");
 				serverDialog = sipLayer.startCall(to);
-			} catch (ParseException e) {
-				// TODO Auto-generated catch block
+			} catch (ParseException e) {			
 				e.printStackTrace();
 			} catch (InvalidArgumentException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (SipException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-		} else if(callBtn.getText() == "Hang up"){
-			callBtn.setText("Call");
+			
+			// Hanging UP (BYE)
+		} else if(connectServerButton.getText() == "Hang up"){
+			connectServerButton.setText("Call");
 			System.out.println("Hanging up...");
 			sipLayer.hangUp(serverDialog);
 		} else {
