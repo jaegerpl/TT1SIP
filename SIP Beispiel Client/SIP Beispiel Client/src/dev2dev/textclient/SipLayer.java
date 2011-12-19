@@ -1,8 +1,5 @@
 package dev2dev.textclient;
 
-import java.lang.reflect.Array;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Properties;
@@ -37,7 +34,6 @@ import javax.sip.header.CallIdHeader;
 import javax.sip.header.ContactHeader;
 import javax.sip.header.ContentTypeHeader;
 import javax.sip.header.FromHeader;
-import javax.sip.header.Header;
 import javax.sip.header.HeaderFactory;
 import javax.sip.header.MaxForwardsHeader;
 import javax.sip.header.ToHeader;
@@ -243,10 +239,18 @@ public class SipLayer implements SipListener {
 
 		Request invite = messageFactory.createRequest("INVITE " + to + " SIP/2.0\n");
 		invite.addHeader(sipProvider.getNewCallId());
-        invite.addHeader(headerFactory.createCSeqHeader(1, Request.INVITE));
+        invite.addHeader(headerFactory.createCSeqHeader(1l, Request.INVITE));
         fromURI = addressFactory.createSipURI(getUsername(), getHost() + ":" + getPort());
         invite.addHeader(headerFactory.createFromHeader(addressFactory.createAddress(fromURI), "tag"));
         invite.addHeader((ViaHeader) viaHeaders.get(0));
+        invite.addHeader(toHeader);
+        invite.addHeader(maxForwards);
+        contactURI = addressFactory.createSipURI(getUsername(),	getHost());
+		contactURI.setPort(getPort());
+		Address contactAddress = addressFactory.createAddress(contactURI);
+		contactAddress.setDisplayName(getUsername());
+		ContactHeader contactHeader = headerFactory.createContactHeader(contactAddress);
+		invite.addHeader(contactHeader);
 
         // Start Transaction
         ClientTransaction trans;
@@ -288,7 +292,7 @@ public class SipLayer implements SipListener {
 
 		callIdHeader = sipProvider.getNewCallId();
 
-		cSeqHeader = headerFactory.createCSeqHeader(1, Request.MESSAGE);
+		cSeqHeader = headerFactory.createCSeqHeader(1l, Request.MESSAGE);
 
 		maxForwards = headerFactory.createMaxForwardsHeader(70);
 		
