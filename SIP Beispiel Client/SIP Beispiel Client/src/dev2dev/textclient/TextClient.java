@@ -266,6 +266,13 @@ public class TextClient extends JFrame implements MessageProcessor {
 		
 	}
 	
+	/**
+	 * When pressing "JoinGroup" the client connects to the specified MC Group.
+	 * 
+	 * When pressing "LeaveGroup" the client disconnects from the MC Group.
+	 * 
+	 * @param evt
+	 */
 	private void IGMPJoinButtonActionPerformed(ActionEvent evt) {
 		if(joinIGMPButton.getText() == "JoinGroup"){
 			System.out.println("Joining Group...");

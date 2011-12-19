@@ -112,6 +112,13 @@ public class SipLayer implements SipListener {
 
 	/**
 	 * This method uses the SIP stack to send a message.
+	 * 
+	 * @param to the server's address
+	 * @param message the message itseld
+	 * 
+	 * @throws ParseException
+	 * @throws InvalidArgumentException
+	 * @throws SipException
 	 */
 	public void sendMessage(String to, String message) throws ParseException, InvalidArgumentException, SipException {
 		Request request = messageFactory.createRequest(requestURI, Request.MESSAGE, callIdHeader, cSeqHeader,
@@ -126,6 +133,17 @@ public class SipLayer implements SipListener {
 		sipProvider.sendRequest(request);
 	}
 
+	/**
+	 * Sends an invite message to a server. Server-Address is taken from to "to" field of the gui
+	 * 
+	 * @param to the server's address
+	 * 
+	 * @return the dialog of the communication
+	 * 
+	 * @throws ParseException
+	 * @throws InvalidArgumentException
+	 * @throws SipException
+	 */
 	public Dialog startCall(String to) throws ParseException, InvalidArgumentException, SipException {
 
 		Request invite = messageFactory.createRequest("INVITE " + to + " SIP/2.0\n");
@@ -140,6 +158,16 @@ public class SipLayer implements SipListener {
 		return dia;
 	}
 	
+	/**
+	 * Sets up and adds the message header for a given request
+	 * 
+	 * @param req the request to which the headers are added to
+	 * @param requestType the type of the request
+	 * @param to the server's address
+	 * 
+	 * @throws ParseException
+	 * @throws InvalidArgumentException
+	 */
 	private void setupHeaders(Request req, String requestType, String to) throws ParseException, InvalidArgumentException {
 
 		// Setting fromURI and FromHeader
@@ -188,6 +216,9 @@ public class SipLayer implements SipListener {
 	}
 	
 	/** This method is called by the SIP stack when a response arrives. */
+	/* (non-Javadoc)
+	 * @see javax.sip.SipListener#processResponse(javax.sip.ResponseEvent)
+	 */
 	public void processResponse(ResponseEvent evt) {
 		Response response = evt.getResponse();
 		int status = response.getStatusCode();
@@ -202,6 +233,9 @@ public class SipLayer implements SipListener {
 
 	/**
 	 * This method is called by the SIP stack when a new request arrives.
+	 */
+	/* (non-Javadoc)
+	 * @see javax.sip.SipListener#processRequest(javax.sip.RequestEvent)
 	 */
 	public void processRequest(RequestEvent evt) {
 		Request req = evt.getRequest();
@@ -320,6 +354,11 @@ public class SipLayer implements SipListener {
 		return callIdHeader.getCallId();
 	}
 
+	/**
+	 * Disconnects from a server using the one and only dialog trackt in the client!
+	 * 
+	 * @param serverDialog
+	 */
 	public void hangUp(Dialog serverDialog) {
 		Request bye;
 		try {
