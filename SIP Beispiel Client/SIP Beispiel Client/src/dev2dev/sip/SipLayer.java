@@ -39,7 +39,6 @@ import javax.sip.message.MessageFactory;
 import javax.sip.message.Request;
 import javax.sip.message.Response;
 
-
 public class SipLayer implements SipListener {
 
 	private MessageProcessor messageProcessor;
@@ -79,8 +78,7 @@ public class SipLayer implements SipListener {
 	 * @throws SipException
 	 * @throws ParseException
 	 */
-	public SipLayer(String username, String ip, int port)
-			throws InvalidArgumentException, TooManyListenersException,
+	public SipLayer(String username, String ip, int port) throws InvalidArgumentException, TooManyListenersException,
 			ParseException, SipException {
 		this.username = username;
 		sipFactory = SipFactory.getInstance();
@@ -92,10 +90,8 @@ public class SipLayer implements SipListener {
 		// DEBUGGING: Information will go to files
 		// textclient.log and textclientdebug.log
 		properties.setProperty("gov.nist.javax.sip.TRACE_LEVEL", "32");
-		properties.setProperty("gov.nist.javax.sip.SERVER_LOG",
-				"textclient.txt");
-		properties.setProperty("gov.nist.javax.sip.DEBUG_LOG",
-				"textclientdebug.log");
+		properties.setProperty("gov.nist.javax.sip.SERVER_LOG", "textclient.txt");
+		properties.setProperty("gov.nist.javax.sip.DEBUG_LOG", "textclientdebug.log");
 
 		sipStack = sipFactory.createSipStack(properties);
 		headerFactory = sipFactory.createHeaderFactory();
@@ -117,23 +113,20 @@ public class SipLayer implements SipListener {
 	/**
 	 * This method uses the SIP stack to send a message.
 	 */
-	public void sendMessage(String to, String message) throws ParseException,
-			InvalidArgumentException, SipException {
+	public void sendMessage(String to, String message) throws ParseException, InvalidArgumentException, SipException {
 
 		setupHeaders(to);
 
 		// Putting REQUEST together
-		Request request = messageFactory.createRequest(requestURI,
-				Request.MESSAGE, callIdHeader, cSeqHeader, fromHeader,
-				toHeader, viaHeaders, maxForwards);
+		Request request = messageFactory.createRequest(requestURI, Request.MESSAGE, callIdHeader, cSeqHeader,
+				fromHeader, toHeader, viaHeaders, maxForwards);
 
 		// Adding ContactHeader to REQUEST
 		contactURI = addressFactory.createSipURI(getUsername(), getHost());
 		contactURI.setPort(getPort());
 		Address contactAddress = addressFactory.createAddress(contactURI);
 		contactAddress.setDisplayName(getUsername());
-		ContactHeader contactHeader = headerFactory
-				.createContactHeader(contactAddress);
+		ContactHeader contactHeader = headerFactory.createContactHeader(contactAddress);
 		request.addHeader(contactHeader);
 
 		// Adding MESSAGE to REQUEST
@@ -169,8 +162,7 @@ public class SipLayer implements SipListener {
 		}
 
 		FromHeader from = (FromHeader) req.getHeader("From");
-		messageProcessor.processMessage(from.getAddress().toString(),
-				new String(req.getRawContent()));
+		messageProcessor.processMessage(from.getAddress().toString(), new String(req.getRawContent()));
 		Response response = null;
 		try { // Reply with OK
 			response = messageFactory.createResponse(200, req);
@@ -189,8 +181,7 @@ public class SipLayer implements SipListener {
 	 * message. Note that this is treated differently from an error message.
 	 */
 	public void processTimeout(TimeoutEvent evt) {
-		messageProcessor
-				.processError("Previous message not sent: " + "timeout");
+		messageProcessor.processError("Previous message not sent: " + "timeout");
 	}
 
 	/**
@@ -198,8 +189,7 @@ public class SipLayer implements SipListener {
 	 * message transmission error.
 	 */
 	public void processIOException(IOExceptionEvent evt) {
-		messageProcessor.processError("Previous message not sent: "
-				+ "I/O Exception");
+		messageProcessor.processError("Previous message not sent: " + "I/O Exception");
 	}
 
 	/**
@@ -237,20 +227,16 @@ public class SipLayer implements SipListener {
 		messageProcessor = newMessageProcessor;
 	}
 
-	public Dialog startCall(String to) throws ParseException,
-			InvalidArgumentException, SipException {
+	public Dialog startCall(String to) throws ParseException, InvalidArgumentException, SipException {
 
 		// Create and send INVITE Request
 		setupHeaders(to);
 
-		Request invite = messageFactory.createRequest("INVITE " + to
-				+ " SIP/2.0\n");
+		Request invite = messageFactory.createRequest("INVITE " + to + " SIP/2.0\n");
 		invite.addHeader(sipProvider.getNewCallId());
 		invite.addHeader(headerFactory.createCSeqHeader(1l, Request.INVITE));
-		fromURI = addressFactory.createSipURI(getUsername(), getHost() + ":"
-				+ getPort());
-		invite.addHeader(headerFactory.createFromHeader(
-				addressFactory.createAddress(fromURI), "tag"));
+		fromURI = addressFactory.createSipURI(getUsername(), getHost() + ":" + getPort());
+		invite.addHeader(headerFactory.createFromHeader(addressFactory.createAddress(fromURI), "tag"));
 		invite.addHeader((ViaHeader) viaHeaders.get(0));
 		invite.addHeader(toHeader);
 		invite.addHeader(maxForwards);
@@ -258,8 +244,7 @@ public class SipLayer implements SipListener {
 		contactURI.setPort(getPort());
 		Address contactAddress = addressFactory.createAddress(contactURI);
 		contactAddress.setDisplayName(getUsername());
-		ContactHeader contactHeader = headerFactory
-				.createContactHeader(contactAddress);
+		ContactHeader contactHeader = headerFactory.createContactHeader(contactAddress);
 		invite.addHeader(contactHeader);
 
 		// Start Transaction
@@ -281,57 +266,45 @@ public class SipLayer implements SipListener {
 	 * @throws InvalidArgumentException
 	 * @throws SipException
 	 */
-	public String register(String proxyAddress, int proxyPort)
-			throws ParseException, InvalidArgumentException, SipException {
-		SipURI from = addressFactory.createSipURI(getUsername(), getHost()
-				+ ":" + getPort());
+	public String register(String proxyAddress, int proxyPort) throws ParseException, InvalidArgumentException,
+			SipException {
+		SipURI from = addressFactory.createSipURI(getUsername(), getHost() + ":" + getPort());
 		Address fromNameAddress = addressFactory.createAddress(from);
 		fromNameAddress.setDisplayName(getUsername());
-		FromHeader fromHeader = headerFactory.createFromHeader(fromNameAddress,
-				null);
+		FromHeader fromHeader = headerFactory.createFromHeader(fromNameAddress, null);
 		ToHeader toHeader = headerFactory.createToHeader(fromNameAddress, null);
-		SipURI requestURI = addressFactory.createSipURI(toUsername,
-				proxyAddress);
+		SipURI requestURI = addressFactory.createSipURI(toUsername, proxyAddress);
 		requestURI.setTransportParam("udp");
 		ArrayList<ViaHeader> viaHeaders = new ArrayList<ViaHeader>();
-		ViaHeader viaHeader = headerFactory.createViaHeader(getHost(),
-				getPort(), "udp", null);
+		ViaHeader viaHeader = headerFactory.createViaHeader(getHost(), getPort(), "udp", null);
 		viaHeaders.add(viaHeader);
 		CallIdHeader callIdHeader = sipProvider.getNewCallId();
 		long sequenceNumber = 1;
-		CSeqHeader cSeqHeader = headerFactory.createCSeqHeader(sequenceNumber,
-				Request.REGISTER);
-		MaxForwardsHeader maxForwards = headerFactory
-				.createMaxForwardsHeader(70);
+		CSeqHeader cSeqHeader = headerFactory.createCSeqHeader(sequenceNumber, Request.REGISTER);
+		MaxForwardsHeader maxForwards = headerFactory.createMaxForwardsHeader(70);
 
-		Request request = messageFactory.createRequest(requestURI,
-				Request.REGISTER, callIdHeader, cSeqHeader, fromHeader,
-				toHeader, viaHeaders, maxForwards);
+		Request request = messageFactory.createRequest(requestURI, Request.REGISTER, callIdHeader, cSeqHeader,
+				fromHeader, toHeader, viaHeaders, maxForwards);
 
-		SipURI contactURI = addressFactory.createSipURI(getUsername(),
-				getHost());
+		SipURI contactURI = addressFactory.createSipURI(getUsername(), getHost());
 		contactURI.setPort(getPort());
 		Address contactAddress = addressFactory.createAddress(contactURI);
 		contactAddress.setDisplayName(getUsername());
 
-		ContactHeader contactHeader = headerFactory
-				.createContactHeader(contactAddress);
+		ContactHeader contactHeader = headerFactory.createContactHeader(contactAddress);
 		request.addHeader(contactHeader);
 
 		sipProvider.sendRequest(request);
 		return callIdHeader.getCallId();
-	}	
+	}
 
-	private void setupHeaders(String to) throws ParseException,
-			InvalidArgumentException {
+	private void setupHeaders(String to) throws ParseException, InvalidArgumentException {
 
 		// Setting fromURI and FromHeader
-		fromURI = addressFactory.createSipURI(getUsername(), getHost() + ":"
-				+ getPort());
+		fromURI = addressFactory.createSipURI(getUsername(), getHost() + ":" + getPort());
 		Address fromNameAddress = addressFactory.createAddress(fromURI);
 		fromNameAddress.setDisplayName(getUsername());
-		fromHeader = headerFactory.createFromHeader(fromNameAddress,
-				"textclientv1.0");
+		fromHeader = headerFactory.createFromHeader(fromNameAddress, "textclientv1.0");
 
 		// Setting toURI and ToHeader
 		toUsername = to.substring(to.indexOf(":") + 1, to.indexOf("@"));
@@ -348,8 +321,7 @@ public class SipLayer implements SipListener {
 
 		// Setting viaHeaders
 		viaHeaders = new ArrayList<ViaHeader>();
-		ViaHeader viaHeader = headerFactory.createViaHeader(getHost(),
-				getPort(), "udp", "branch1");
+		ViaHeader viaHeader = headerFactory.createViaHeader(getHost(), getPort(), "udp", "branch1");
 		viaHeaders.add(viaHeader);
 
 		callIdHeader = sipProvider.getNewCallId();
@@ -358,16 +330,14 @@ public class SipLayer implements SipListener {
 
 		maxForwards = headerFactory.createMaxForwardsHeader(70);
 
-		contentTypeHeader = headerFactory.createContentTypeHeader("text",
-				"plain");
+		contentTypeHeader = headerFactory.createContentTypeHeader("text", "plain");
 	}
 
 	public void hangUp(Dialog serverDialog) {
 		Request bye;
 		try {
 			bye = serverDialog.createRequest(Request.BYE);
-			serverDialog.sendRequest(this.sipProvider
-					.getNewClientTransaction(bye));
+			serverDialog.sendRequest(this.sipProvider.getNewClientTransaction(bye));
 		} catch (TransactionDoesNotExistException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
