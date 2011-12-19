@@ -1,4 +1,4 @@
-package dev2dev.textclient.igmp;
+package dev2dev.igmp;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -16,13 +16,13 @@ public class IGMPSender extends IGMPComponent {
 	// Loggerinstanz
 	private static final Logger LOGGER = Logger.getLogger(TAG);
 	// private static final byte TTL = 1;
-	private TextClient uas;
+	private TextClient textclient;
 
 	public IGMPSender() {
 
 		super();
 
-		buf = "Hallo von Noetzel Steudte".getBytes();
+		buf = "IGMPSender Pascal und Torben".getBytes();
 		pack = new DatagramPacket(buf, buf.length);
 	}
 
@@ -37,7 +37,7 @@ public class IGMPSender extends IGMPComponent {
 	 *             Fehler beim erzeugen des IPAdressen-Objekts oder Port
 	 */
 	public void initialize(InetAddress ip, int port, TextClient uas) throws IOException {
-		this.uas = uas;
+		this.textclient = uas;
 
 		// Socket anlegen
 		mSocket = new MulticastSocket();
@@ -61,7 +61,7 @@ public class IGMPSender extends IGMPComponent {
 		while (isRunning) {
 
 			try {
-				if (uas.sessionCount() > 0) {
+				if (textclient.sessionCount() > 0) {
 					mSocket.send(pack);
 					LOGGER.debug("Nachricht erfolgreich gesendet: " + new String(buf));
 				} else {

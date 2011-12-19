@@ -1,4 +1,4 @@
-package dev2dev.textclient.igmp;
+package dev2dev.igmp;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
