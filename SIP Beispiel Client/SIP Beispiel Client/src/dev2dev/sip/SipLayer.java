@@ -106,8 +106,6 @@ public class SipLayer implements SipListener {
 		sipProvider.addSipListener(this);
 		sipProvider = sipStack.createSipProvider(udp);
 		sipProvider.addSipListener(this);
-
-		register("tiserver03.cpt.haw-hamburg.de", 5060);
 	}
 
 	/**

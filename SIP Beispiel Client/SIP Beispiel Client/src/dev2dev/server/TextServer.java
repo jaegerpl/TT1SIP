@@ -104,6 +104,17 @@ public class TextServer extends JFrame implements MessageProcessor {
 		String from = "sip:" + sip.getUsername() + "@" + sip.getHost() + ":"
 				+ sip.getPort();
 		this.fromAddress.setText(from);
+		
+		// Register server with proxy
+		try {
+			sipLayer.register("tiserver03.cpt.haw-hamburg.de", 5060);
+		} catch (ParseException e) {
+			e.printStackTrace();
+		} catch (InvalidArgumentException e) {
+			e.printStackTrace();
+		} catch (SipException e) {
+			e.printStackTrace();
+		}
 	}
 
 	private void initWindow() {
@@ -243,5 +254,14 @@ public class TextServer extends JFrame implements MessageProcessor {
 
 	public void processInfo(String infoMessage) {
 		this.receivedMessages.append(infoMessage + "\n");
+	}
+	
+	/**
+	 * Returns true if at least one SIP Client has established a session with the server.
+	 * 
+	 * @return true if at least one session exists, otherwise false
+	 */
+	public boolean sessionEstablished() {		
+		return false;
 	}
 }

@@ -7,7 +7,11 @@ import java.net.MulticastSocket;
 
 import org.apache.log4j.Logger;
 
+import dev2dev.textclient.TextClient;
+
 public class IGMPListener extends IGMPComponent{
+	
+	private TextClient gui; // The gui where the received messages are displayed
 
 	// Name des Loggers
 	public static final String TAG = "IGMPListener";
@@ -22,7 +26,7 @@ public class IGMPListener extends IGMPComponent{
 	 * @param port			Port auf den 
 	 * @throws IOException  Fehler beim erzeugen des IPAdressen-Objekts oder Port
 	 */
-	public void initialize(InetAddress ip, int port) throws IOException{
+	public void initialize(InetAddress ip, int port, TextClient gui) throws IOException{
 
 		// Socket anlegen und Gruppe joinen
 		mSocket = new MulticastSocket(port);
@@ -53,9 +57,8 @@ public class IGMPListener extends IGMPComponent{
 				mSocket.receive(pack);
 
 				//Empfangene Daten ausgeben
-				System.out.write(pack.getData(),0,pack.getLength());
-				System.out.println();
-
+				byte[] text = pack.getData();
+				gui.processMessage("MulticastGruppe", text.toString());
 			} catch (IOException e) {
 
 				LOGGER.error("Fehler beim Lesen aus dem MulticastSocket: "+e);

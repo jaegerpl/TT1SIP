@@ -278,7 +278,7 @@ public class TextClient extends JFrame implements MessageProcessor {
 			System.out.println("Joining Group...");
 			// Join IGMP Group
 			try {
-				igmpListener.initialize(InetAddress.getByName("239.238.237.17"), 9017);
+				igmpListener.initialize(InetAddress.getByName("239.238.237.17"), 9017, this);
 			} catch (UnknownHostException e) {
 				e.printStackTrace();
 			} catch (IOException e) {

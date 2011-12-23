@@ -7,6 +7,7 @@ import java.net.MulticastSocket;
 
 import org.apache.log4j.Logger;
 
+import dev2dev.server.TextServer;
 import dev2dev.textclient.TextClient;
 
 public class IGMPSender extends IGMPComponent {
@@ -16,7 +17,7 @@ public class IGMPSender extends IGMPComponent {
 	// Loggerinstanz
 	private static final Logger LOGGER = Logger.getLogger(TAG);
 	// private static final byte TTL = 1;
-	private TextClient textclient;
+	private TextServer textserver;
 
 	public IGMPSender() {
 
@@ -36,8 +37,8 @@ public class IGMPSender extends IGMPComponent {
 	 * @throws IOException
 	 *             Fehler beim erzeugen des IPAdressen-Objekts oder Port
 	 */
-	public void initialize(InetAddress ip, int port, TextClient uas) throws IOException {
-		this.textclient = uas;
+	public void initialize(InetAddress ip, int port, TextServer ts) throws IOException {
+		this.textserver = ts;
 
 		// Socket anlegen
 		mSocket = new MulticastSocket();
@@ -60,26 +61,26 @@ public class IGMPSender extends IGMPComponent {
 
 		while (isRunning) {
 
-//			try {
-//				if (textclient.sessionCount() > 0) {
-//					mSocket.send(pack);
-//					LOGGER.debug("Nachricht erfolgreich gesendet: " + new String(buf));
-//				} else {
-//					LOGGER.debug("Keine Nachricht gesendet, weil session count <= 0");
-//				}
-//				Thread.sleep(2000);
-//
-//			} catch (IOException e) {
-//
-//				LOGGER.error("Fehler beim Senden der Nachrichten an die MulticastGruppe: " + e);
-//				stop();
-//
-//			} catch (InterruptedException e) {
-//
-//				LOGGER.error("Fehler beim Sleep des Threads: " + e);
-//				stop();
-//
-//			}
+			try {
+				if (textserver.sessionEstablished()) {
+					mSocket.send(pack);
+					LOGGER.debug("Nachricht erfolgreich gesendet: " + new String(buf));
+				} else {
+					LOGGER.debug("Keine Nachricht gesendet, da keine Session vorhanden.");
+				}
+				Thread.sleep(2000);
+
+			} catch (IOException e) {
+
+				LOGGER.error("Fehler beim Senden der Nachrichten an die MulticastGruppe: " + e);
+				stop();
+
+			} catch (InterruptedException e) {
+
+				LOGGER.error("Fehler beim Sleep des Threads: " + e);
+				stop();
+
+			}
 
 		}
 
