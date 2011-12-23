@@ -76,10 +76,10 @@ public class TextServer extends JFrame implements MessageProcessor {
 			String ip = InetAddress.getByName(localHost).getHostAddress();
 			
 			SipLayer sipLayer = new SipLayer(username, ip, port);
-			TextServer tc = new TextServer(sipLayer);
-			sipLayer.setMessageProcessor(tc);
+			TextServer ts = new TextServer(sipLayer);
+			sipLayer.setMessageProcessor(ts);
 
-			tc.show();
+			ts.show();
 		} catch (Throwable e) {
 			System.out.println("Problem initializing the SIP stack.");
 			e.printStackTrace();
