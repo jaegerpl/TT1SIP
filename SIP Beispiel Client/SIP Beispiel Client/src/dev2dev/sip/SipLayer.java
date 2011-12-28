@@ -393,7 +393,14 @@ public class SipLayer implements SipListener {
 		} catch (SipException e) {
 			e.printStackTrace();
 		}
-
+	}	
+	
+	public Response createResponse(int statusCode, Request request) throws ParseException {
+		return messageFactory.createResponse(statusCode, request);
 	}
+	
+	public void sendResponse(Response response) throws SipException {
+		sipProvider.sendResponse(response);
+	}	
 
 }
