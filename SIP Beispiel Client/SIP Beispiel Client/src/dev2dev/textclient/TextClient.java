@@ -8,35 +8,13 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Properties;
 
 import javax.sip.Dialog;
+import javax.sip.DialogTerminatedEvent;
 import javax.sip.InvalidArgumentException;
-import javax.sip.ListeningPoint;
 import javax.sip.RequestEvent;
 import javax.sip.ResponseEvent;
 import javax.sip.SipException;
-import javax.sip.SipFactory;
-import javax.sip.SipListener;
-import javax.sip.SipProvider;
-import javax.sip.SipStack;
-import javax.sip.TimeoutEvent;
-import javax.sip.address.Address;
-import javax.sip.address.AddressFactory;
-import javax.sip.address.SipURI;
-import javax.sip.header.CSeqHeader;
-import javax.sip.header.CallIdHeader;
-import javax.sip.header.ContactHeader;
-import javax.sip.header.ContentTypeHeader;
-import javax.sip.header.FromHeader;
-import javax.sip.header.HeaderFactory;
-import javax.sip.header.MaxForwardsHeader;
-import javax.sip.header.ToHeader;
-import javax.sip.header.ViaHeader;
-import javax.sip.message.MessageFactory;
-import javax.sip.message.Request;
-import javax.sip.message.Response;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -44,11 +22,16 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
+import org.apache.log4j.Logger;
+
 import dev2dev.igmp.IGMPListener;
 import dev2dev.sip.MessageProcessor;
 import dev2dev.sip.SipLayer;
 
 public class TextClient extends JFrame implements MessageProcessor {
+
+	private static final Logger LOGGER = Logger.getLogger("TextClient");
+
 	private SipLayer sipLayer;
 
 	// GUI STUFF
@@ -66,11 +49,12 @@ public class TextClient extends JFrame implements MessageProcessor {
 	private JLabel toLbl;
 
 	// SIP STUFF
-	private Dialog serverDialog;	// the dialog received when sending INVITE to a server
-	
+	private Dialog serverDialog; // the dialog received when sending INVITE to a
+									// server
+
 	// IGMP STUFF
 	static IGMPListener igmpListener;
-	
+
 	public static void main(String[] args) {
 		if (args.length != 2) {
 			printUsage();
@@ -82,14 +66,14 @@ public class TextClient extends JFrame implements MessageProcessor {
 			int port = Integer.parseInt(args[1]);
 			String localHost = InetAddress.getLocalHost().getHostName();
 			String ip = InetAddress.getByName(localHost).getHostAddress();
-			
+
 			igmpListener = new IGMPListener();
-			
+
 			// Starting TextClient
 			SipLayer sipLayer = new SipLayer(username, ip, port);
 			TextClient tc = new TextClient(sipLayer);
 			sipLayer.setMessageProcessor(tc);
-			
+
 			tc.show();
 		} catch (Throwable e) {
 			System.out.println("Problem initializing the SIP stack.");
@@ -198,7 +182,7 @@ public class TextClient extends JFrame implements MessageProcessor {
 
 		getContentPane().add(connectServerButton);
 		connectServerButton.setBounds(1, 255, 100, 25);
-		
+
 		joinIGMPButton.setText("JoinGroup");
 		joinIGMPButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
@@ -207,7 +191,7 @@ public class TextClient extends JFrame implements MessageProcessor {
 		});
 
 		getContentPane().add(joinIGMPButton);
-		joinIGMPButton.setBounds(102, 255, 100, 25);		
+		joinIGMPButton.setBounds(102, 255, 100, 25);
 
 		java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit()
 				.getScreenSize();
@@ -229,24 +213,24 @@ public class TextClient extends JFrame implements MessageProcessor {
 	}
 
 	/**
-	 * When pressing "Call" the TextClient will join an IGMP Group and send an invite to a server
-	 * via the proxy.
+	 * When pressing "Call" the TextClient will join an IGMP Group and send an
+	 * invite to a server via the proxy.
 	 * 
-	 * When pressing "Hang Up" the TextClient will send a BYE to the server but will stay registered 
-	 * in the IGMP Group.
+	 * When pressing "Hang Up" the TextClient will send a BYE to the server but
+	 * will stay registered in the IGMP Group.
 	 * 
 	 * @param evt
 	 */
 	private void callBtnActionPerformed(ActionEvent evt) {
-		
+
 		// Calling (INVITE)
-		if(connectServerButton.getText() == "Call"){		
+		if (connectServerButton.getText() == "Call") {
 			System.out.println("Calling...");
 			String to = this.toAddress.getText();
 			try {
 				connectServerButton.setText("Hang up");
 				serverDialog = sipLayer.startCall(to);
-			} catch (ParseException e) {			
+			} catch (ParseException e) {
 				e.printStackTrace();
 			} catch (InvalidArgumentException e) {
 				e.printStackTrace();
@@ -255,7 +239,7 @@ public class TextClient extends JFrame implements MessageProcessor {
 			}
 			System.out.println("Done. Call established");
 			// Hanging UP (BYE)
-		} else if(connectServerButton.getText() == "Hang up"){
+		} else if (connectServerButton.getText() == "Hang up") {
 			connectServerButton.setText("Call");
 			System.out.println("Hanging up...");
 			sipLayer.hangUp(serverDialog);
@@ -263,9 +247,9 @@ public class TextClient extends JFrame implements MessageProcessor {
 		} else {
 			System.out.println("Fehler im Call-HangUp-Handling");
 		}
-		
+
 	}
-	
+
 	/**
 	 * When pressing "JoinGroup" the client connects to the specified MC Group.
 	 * 
@@ -274,11 +258,12 @@ public class TextClient extends JFrame implements MessageProcessor {
 	 * @param evt
 	 */
 	private void IGMPJoinButtonActionPerformed(ActionEvent evt) {
-		if(joinIGMPButton.getText() == "JoinGroup"){
+		if (joinIGMPButton.getText() == "JoinGroup") {
 			System.out.println("Joining Group...");
 			// Join IGMP Group
 			try {
-				igmpListener.initialize(InetAddress.getByName("239.238.237.17"), 9017, this);
+				igmpListener.initialize(
+						InetAddress.getByName("239.238.237.17"), 9017, this);
 			} catch (UnknownHostException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
@@ -286,7 +271,7 @@ public class TextClient extends JFrame implements MessageProcessor {
 			}
 			joinIGMPButton.setText("LeaveGroup");
 			System.out.println("Done. Group Joined");
-		} else if(joinIGMPButton.getText() == "LeaveGroup"){
+		} else if (joinIGMPButton.getText() == "LeaveGroup") {
 			System.out.println("Leaving Group.");
 			igmpListener.stop();
 			joinIGMPButton.setText("JoinGroup");
@@ -298,11 +283,39 @@ public class TextClient extends JFrame implements MessageProcessor {
 		this.receivedMessages.append("From " + sender + ": " + message + "\n");
 	}
 
+	public void processAck(RequestEvent requestEvent) {
+		LOGGER.debug("processAck()");
+	}
+
+	public void processBye(RequestEvent requestEvent) {
+		LOGGER.debug("processBye()");
+	}
+
+	public void processDialogTerminated(DialogTerminatedEvent dte) {
+		LOGGER.debug("processDialogTerminated()");
+	}
+
 	public void processError(String errorMessage) {
 		this.receivedMessages.append("ERROR: " + errorMessage + "\n");
 	}
 
 	public void processInfo(String infoMessage) {
 		this.receivedMessages.append(infoMessage + "\n");
+	}
+
+	public void processInvite(RequestEvent requestEvent) {
+		LOGGER.debug("processInvite()");
+	}
+
+	public void processOK(ResponseEvent responseEvent) {
+		LOGGER.debug("processOK()");
+	}
+
+	public void processRinging() {
+		LOGGER.debug("processRinging()");
+	}
+
+	public void processTrying() {
+		LOGGER.debug("processTrying()");
 	}
 }

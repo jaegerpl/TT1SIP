@@ -7,8 +7,7 @@ import java.net.MulticastSocket;
 
 import org.apache.log4j.Logger;
 
-import dev2dev.server.TextServer;
-import dev2dev.textclient.TextClient;
+import dev2dev.server.UserAgentServer;
 
 public class IGMPSender extends IGMPComponent {
 
@@ -17,7 +16,7 @@ public class IGMPSender extends IGMPComponent {
 	// Loggerinstanz
 	private static final Logger LOGGER = Logger.getLogger(TAG);
 	// private static final byte TTL = 1;
-	private TextServer textserver;
+	private UserAgentServer textserver;
 
 	public IGMPSender() {
 
@@ -37,7 +36,7 @@ public class IGMPSender extends IGMPComponent {
 	 * @throws IOException
 	 *             Fehler beim erzeugen des IPAdressen-Objekts oder Port
 	 */
-	public void initialize(InetAddress ip, int port, TextServer ts) throws IOException {
+	public void initialize(InetAddress ip, int port, UserAgentServer ts) throws IOException {
 		this.textserver = ts;
 
 		// Socket anlegen
@@ -47,7 +46,7 @@ public class IGMPSender extends IGMPComponent {
 		pack.setAddress(ip);
 		pack.setPort(port);
 
-		// IP und Port fŸr spŠter speichern
+		// IP und Port fï¿½r spï¿½ter speichern
 		mcastAdr = ip;
 		this.port = port;
 
