@@ -39,7 +39,10 @@ import javax.sip.message.MessageFactory;
 import javax.sip.message.Request;
 import javax.sip.message.Response;
 
+import org.apache.log4j.Logger;
+
 public class SipLayer implements SipListener {
+	private static final Logger LOGGER = Logger.getLogger("SIPLayer");	
 
 	private MessageProcessor messageProcessor;
 
@@ -218,15 +221,16 @@ public class SipLayer implements SipListener {
 	 * @see javax.sip.SipListener#processResponse(javax.sip.ResponseEvent)
 	 */
 	public void processResponse(ResponseEvent evt) {
+		LOGGER.debug("processResponse(" + evt.toString() + " )");
 		Response response = evt.getResponse();
 		int status = response.getStatusCode();
-
-		if ((status >= 200) && (status < 300)) { // Success!
-			messageProcessor.processInfo("--Sent");
-			return;
-		}
-
-		messageProcessor.processError("Previous message not sent: " + status);
+		
+		//Handlen der verschiedenen Responses
+		if (status == Response.TRYING) messageProcessor.processTrying();
+		if (status >= Response.OK && status <= 300) messageProcessor.processInfo("--Sent");
+		else messageProcessor.processError("Previous message not sent: " + status);
+		if (status == Response.OK) messageProcessor.processOK(evt);
+		if (status == Response.RINGING)	messageProcessor.processRinging();		
 	}
 
 	/**
@@ -236,27 +240,32 @@ public class SipLayer implements SipListener {
 	 * @see javax.sip.SipListener#processRequest(javax.sip.RequestEvent)
 	 */
 	public void processRequest(RequestEvent evt) {
+		LOGGER.debug("processRequest(" + evt.toString() + " )");
 		Request req = evt.getRequest();
 
 		String method = req.getMethod();
-		if (!method.equals("MESSAGE")) { // bad request type.
-			messageProcessor.processError("Bad request type: " + method);
-			return;
+		
+		// Handlen der verschiedenen Requests
+		if (method.equals("MESSAGE")) {
+			FromHeader from = (FromHeader) req.getHeader("From");
+			messageProcessor.processMessage(from.getAddress().toString(),
+					new String(req.getRawContent()));
+			Response response = null;
+			try { // Reply with OK
+				response = messageFactory.createResponse(200, req);
+				ToHeader toHeader = (ToHeader) response
+						.getHeader(ToHeader.NAME);
+				toHeader.setTag("888"); // This is mandatory as per the spec.
+				ServerTransaction st = sipProvider.getNewServerTransaction(req);
+				st.sendResponse(response);
+			} catch (Throwable e) {
+				e.printStackTrace();
+				messageProcessor.processError("Can't send OK reply.");
+			}
 		}
-
-		FromHeader from = (FromHeader) req.getHeader("From");
-		messageProcessor.processMessage(from.getAddress().toString(), new String(req.getRawContent()));
-		Response response = null;
-		try { // Reply with OK
-			response = messageFactory.createResponse(200, req);
-			ToHeader toHeader = (ToHeader) response.getHeader(ToHeader.NAME);
-			toHeader.setTag("888"); // This is mandatory as per the spec.
-			ServerTransaction st = sipProvider.getNewServerTransaction(req);
-			st.sendResponse(response);
-		} catch (Throwable e) {
-			e.printStackTrace();
-			messageProcessor.processError("Can't send OK reply.");
-		}
+		else if (method.equals(Request.ACK)) messageProcessor.processAck(evt);
+		else if (method.equals(Request.INVITE))	messageProcessor.processInvite(evt);
+		else if (method.equals(Request.BYE)) messageProcessor.processBye(evt);				
 	}
 
 	/**
