@@ -216,6 +216,21 @@ public class SipLayer implements SipListener {
 		
 	}
 	
+	/**
+	 * Creates a ContactHeader based on the contact address
+	 * 
+	 * @throws ParseException
+	 */
+	public ContactHeader getContactHeader() throws ParseException {
+			SipURI contactURI;
+			contactURI = addressFactory.createSipURI(getUsername(), getHost());
+			contactURI.setPort(getPort());
+			Address contactAddress = addressFactory.createAddress(contactURI);
+			contactAddress.setDisplayName(getUsername());
+			ContactHeader contactHeader = headerFactory.createContactHeader(contactAddress);
+			return contactHeader;
+	}
+	
 	/** This method is called by the SIP stack when a response arrives. */
 	/* (non-Javadoc)
 	 * @see javax.sip.SipListener#processResponse(javax.sip.ResponseEvent)
