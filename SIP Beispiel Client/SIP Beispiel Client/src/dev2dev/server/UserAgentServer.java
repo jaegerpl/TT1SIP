@@ -69,21 +69,25 @@ public class UserAgentServer implements MessageProcessor {
 		// Proxy - UAS
 		// INVITE ->
 		// <- 200 OK
-		// ACK ->		
+		// ACK ->
+		LOGGER.debug("processAck()");
 		String dialogId = requestEvent.getDialog().getDialogId();
 		// sender is known and waiting to establish a dialog
 		if (inactiveDialogs.contains(dialogId)) {
+			LOGGER.debug(dialogId + " is now active!");
 			activeDialogs.add(dialogId);
 			inactiveDialogs.remove(dialogId);
 		}
 		// sender is unknown
 		else {
 			try {
+				LOGGER.debug(dialogId + " is unknown!");
 				Response response = sipLayer.createResponse(Response.DECLINE, requestEvent.getRequest());
 				ServerTransaction serverTransaction = requestEvent.getServerTransaction();
 				if (serverTransaction == null)
 					serverTransaction = sipLayer.getNewServerTransaction(requestEvent.getRequest());
 				serverTransaction.sendResponse(response);
+				LOGGER.debug("Sent Decline: " + response.toString());
 			} catch (ParseException e) {
 				e.printStackTrace();
 			} catch (SipException e) {
@@ -104,6 +108,7 @@ public class UserAgentServer implements MessageProcessor {
 		// Proxy - UAS
 		// BYE ->
 		// <- 200 OK
+		LOGGER.debug("processBye()");
 		String dialogId = requestEvent.getDialog().getDialogId();
 		// confirms BYE with OK
 		if (activeDialogs.contains(dialogId)) {
@@ -113,6 +118,7 @@ public class UserAgentServer implements MessageProcessor {
 				ServerTransaction serverTransaction = requestEvent.getServerTransaction();
 				if (serverTransaction == null) serverTransaction = sipLayer.getNewServerTransaction(requestEvent.getRequest());
 				serverTransaction.sendResponse(response);
+				LOGGER.debug("Sent OK: " + response.toString());
 			} catch (InvalidArgumentException e) {
 				e.printStackTrace();
 			} catch (ParseException e) {
