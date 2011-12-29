@@ -9,6 +9,7 @@ import javax.sip.RequestEvent;
 import javax.sip.ResponseEvent;
 import javax.sip.ServerTransaction;
 import javax.sip.SipException;
+import javax.sip.header.CallIdHeader;
 import javax.sip.header.ContactHeader;
 import javax.sip.message.Response;
 
@@ -27,6 +28,7 @@ public class UserAgentServer implements MessageProcessor {
 	private ContactHeader contactHeader;
 	private Set<String> activeDialogs;
 	private Set<String> inactiveDialogs;
+	private String callIdProxy;
 	private boolean isRegisteredAtProxy = false;
 	
 	public UserAgentServer(SipLayer sipLayer) {
@@ -34,7 +36,7 @@ public class UserAgentServer implements MessageProcessor {
 		sipLayer.addMessageProcessor(this);
 		try {
 			contactHeader = sipLayer.getContactHeader();		
-			sipLayer.register(PROXY_ADDRESS, PROXY_PORT);
+			callIdProxy = sipLayer.register(PROXY_ADDRESS, PROXY_PORT);
 		} catch (ParseException e) {
 			e.printStackTrace();
 		} catch (InvalidArgumentException e) {
@@ -150,7 +152,8 @@ public class UserAgentServer implements MessageProcessor {
 		// <- 180 Ringing
 		// <- 200 OK
 		// ACK ->
-		LOGGER.debug("processInvite()");		
+		LOGGER.debug("processInvite()");
+		
 
 	}
 
@@ -160,7 +163,7 @@ public class UserAgentServer implements MessageProcessor {
 	}
 
 	/**
-	 * Handles incoming OK response
+	 * Handles incoming OK response and checks if registration was successful
 	 * 
 	 * @param responseEvent
 	 */
@@ -170,6 +173,16 @@ public class UserAgentServer implements MessageProcessor {
 		// REGISTER ->
 		// <- 200 OK
 		LOGGER.debug("processOK()");
+		String responseId = responseEvent.getDialog().getDialogId();
+		LOGGER.debug("DialogId: " + responseId);
+		CallIdHeader callIdHeader = (CallIdHeader) responseEvent.getResponse().getHeader(CallIdHeader.NAME);
+		String callIdResponse = callIdHeader.getCallId();
+		LOGGER.debug("CallId: " + callIdResponse);
+		// not registered and callId is the one from the registration at the proxy
+		if (isRegisteredAtProxy == false && callIdProxy.equals(callIdResponse)) {
+			LOGGER.debug("Registration successful!");
+			isRegisteredAtProxy = true;
+		}		
 	}
 
 	@Override

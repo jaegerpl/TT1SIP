@@ -43,7 +43,7 @@ import javax.sip.message.Response;
 import org.apache.log4j.Logger;
 
 public class SipLayer implements SipListener {
-	private static final Logger LOGGER = Logger.getLogger("SIPLayer");	
+	private static final Logger LOGGER = Logger.getLogger("SIPLayer");
 
 	private List<MessageProcessor> messageProcessors;
 
@@ -110,15 +110,17 @@ public class SipLayer implements SipListener {
 		sipProvider.addSipListener(this);
 		sipProvider = sipStack.createSipProvider(udp);
 		sipProvider.addSipListener(this);
-		
+
 		messageProcessors = new ArrayList<MessageProcessor>();
 	}
 
 	/**
 	 * This method uses the SIP stack to send a message.
 	 * 
-	 * @param to the server's address
-	 * @param message the message itseld
+	 * @param to
+	 *            the server's address
+	 * @param message
+	 *            the message itseld
 	 * 
 	 * @throws ParseException
 	 * @throws InvalidArgumentException
@@ -127,7 +129,7 @@ public class SipLayer implements SipListener {
 	public void sendMessage(String to, String message) throws ParseException, InvalidArgumentException, SipException {
 		Request request = messageFactory.createRequest(requestURI, Request.MESSAGE, callIdHeader, cSeqHeader,
 				fromHeader, toHeader, viaHeaders, maxForwards);
-		
+
 		setupHeaders(request, Request.MESSAGE, to);
 
 		// Adding MESSAGE to REQUEST
@@ -138,9 +140,11 @@ public class SipLayer implements SipListener {
 	}
 
 	/**
-	 * Sends an invite message to a server. Server-Address is taken from to "to" field of the gui
+	 * Sends an invite message to a server. Server-Address is taken from to "to"
+	 * field of the gui
 	 * 
-	 * @param to the server's address
+	 * @param to
+	 *            the server's address
 	 * 
 	 * @return the dialog of the communication
 	 * 
@@ -161,18 +165,22 @@ public class SipLayer implements SipListener {
 		trans.sendRequest();
 		return dia;
 	}
-	
+
 	/**
 	 * Sets up and adds the message header for a given request
 	 * 
-	 * @param req the request to which the headers are added to
-	 * @param requestType the type of the request
-	 * @param to the server's address
+	 * @param req
+	 *            the request to which the headers are added to
+	 * @param requestType
+	 *            the type of the request
+	 * @param to
+	 *            the server's address
 	 * 
 	 * @throws ParseException
 	 * @throws InvalidArgumentException
 	 */
-	private void setupHeaders(Request req, String requestType, String to) throws ParseException, InvalidArgumentException {
+	private void setupHeaders(Request req, String requestType, String to) throws ParseException,
+			InvalidArgumentException {
 
 		// Setting fromURI and FromHeader
 		fromURI = addressFactory.createSipURI(getUsername(), getHost() + ":" + getPort());
@@ -194,7 +202,7 @@ public class SipLayer implements SipListener {
 		// Setting RequestURI
 		requestURI = addressFactory.createSipURI(toUsername, toAddress);
 		requestURI.setTransportParam("udp");
-		
+
 		// Setting ContactHeader
 		contactURI = addressFactory.createSipURI(getUsername(), getHost());
 		contactURI.setPort(getPort());
@@ -216,60 +224,63 @@ public class SipLayer implements SipListener {
 		req.addHeader(maxForwards);
 		contentTypeHeader = headerFactory.createContentTypeHeader("text", "plain");
 		req.addHeader(contentTypeHeader);
-		
+
 	}
-	
+
 	/**
 	 * Creates a ContactHeader based on the contact address
 	 * 
 	 * @throws ParseException
 	 */
 	public ContactHeader getContactHeader() throws ParseException {
-			SipURI contactURI;
-			contactURI = addressFactory.createSipURI(getUsername(), getHost());
-			contactURI.setPort(getPort());
-			Address contactAddress = addressFactory.createAddress(contactURI);
-			contactAddress.setDisplayName(getUsername());
-			ContactHeader contactHeader = headerFactory.createContactHeader(contactAddress);
-			return contactHeader;
+		SipURI contactURI;
+		contactURI = addressFactory.createSipURI(getUsername(), getHost());
+		contactURI.setPort(getPort());
+		Address contactAddress = addressFactory.createAddress(contactURI);
+		contactAddress.setDisplayName(getUsername());
+		ContactHeader contactHeader = headerFactory.createContactHeader(contactAddress);
+		return contactHeader;
 	}
-	
+
 	/** This method is called by the SIP stack when a response arrives. */
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see javax.sip.SipListener#processResponse(javax.sip.ResponseEvent)
 	 */
 	public void processResponse(ResponseEvent evt) {
 		LOGGER.debug("processResponse(" + evt.toString() + " )");
 		Response response = evt.getResponse();
 		int status = response.getStatusCode();
-		
-		//Handlen der verschiedenen Responses
+
+		// Handlen der verschiedenen Responses
 		if (status == Response.TRYING) {
 			for (MessageProcessor messageProcessor : messageProcessors)
-			messageProcessor.processTrying();
+				messageProcessor.processTrying();
 		}
-		if (status >= Response.OK && status <= 300){
+		if (status >= Response.OK && status <= 300) {
 			for (MessageProcessor messageProcessor : messageProcessors)
-			messageProcessor.processInfo("--Sent");
-		}
-		else {
+				messageProcessor.processInfo("--Sent");
+		} else {
 			for (MessageProcessor messageProcessor : messageProcessors)
-			messageProcessor.processError("Previous message not sent: " + status);
+				messageProcessor.processError("Previous message not sent: " + status);
 		}
 		if (status == Response.OK) {
 			for (MessageProcessor messageProcessor : messageProcessors)
-			messageProcessor.processOK(evt);
+				messageProcessor.processOK(evt);
 		}
 		if (status == Response.RINGING) {
 			for (MessageProcessor messageProcessor : messageProcessors)
-			messageProcessor.processRinging();		
+				messageProcessor.processRinging();
 		}
 	}
 
 	/**
 	 * This method is called by the SIP stack when a new request arrives.
 	 */
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see javax.sip.SipListener#processRequest(javax.sip.RequestEvent)
 	 */
 	public void processRequest(RequestEvent evt) {
@@ -277,38 +288,33 @@ public class SipLayer implements SipListener {
 		Request req = evt.getRequest();
 
 		String method = req.getMethod();
-		
+
 		// Handlen der verschiedenen Requests
 		if (method.equals("MESSAGE")) {
 			FromHeader from = (FromHeader) req.getHeader("From");
 			for (MessageProcessor messageProcessor : messageProcessors)
-			messageProcessor.processMessage(from.getAddress().toString(),
-					new String(req.getRawContent()));
+				messageProcessor.processMessage(from.getAddress().toString(), new String(req.getRawContent()));
 			Response response = null;
 			try { // Reply with OK
 				response = messageFactory.createResponse(200, req);
-				ToHeader toHeader = (ToHeader) response
-						.getHeader(ToHeader.NAME);
+				ToHeader toHeader = (ToHeader) response.getHeader(ToHeader.NAME);
 				toHeader.setTag("888"); // This is mandatory as per the spec.
 				ServerTransaction st = sipProvider.getNewServerTransaction(req);
 				st.sendResponse(response);
 			} catch (Throwable e) {
 				e.printStackTrace();
 				for (MessageProcessor messageProcessor : messageProcessors)
-				messageProcessor.processError("Can't send OK reply.");
+					messageProcessor.processError("Can't send OK reply.");
 			}
-		}
-		else if (method.equals(Request.ACK)) {
+		} else if (method.equals(Request.ACK)) {
 			for (MessageProcessor messageProcessor : messageProcessors)
-			messageProcessor.processAck(evt);
-		}
-		else if (method.equals(Request.INVITE)) {
+				messageProcessor.processAck(evt);
+		} else if (method.equals(Request.INVITE)) {
 			for (MessageProcessor messageProcessor : messageProcessors)
-			messageProcessor.processInvite(evt);
-		}
-		else if (method.equals(Request.BYE)) {
+				messageProcessor.processInvite(evt);
+		} else if (method.equals(Request.BYE)) {
 			for (MessageProcessor messageProcessor : messageProcessors)
-			messageProcessor.processBye(evt);				
+				messageProcessor.processBye(evt);
 		}
 	}
 
@@ -318,7 +324,7 @@ public class SipLayer implements SipListener {
 	 */
 	public void processTimeout(TimeoutEvent evt) {
 		for (MessageProcessor messageProcessor : messageProcessors)
-		messageProcessor.processError("Previous message not sent: " + "timeout");
+			messageProcessor.processError("Previous message not sent: " + "timeout");
 	}
 
 	/**
@@ -327,7 +333,7 @@ public class SipLayer implements SipListener {
 	 */
 	public void processIOException(IOExceptionEvent evt) {
 		for (MessageProcessor messageProcessor : messageProcessors)
-		messageProcessor.processError("Previous message not sent: " + "I/O Exception");
+			messageProcessor.processError("Previous message not sent: " + "I/O Exception");
 	}
 
 	/**
@@ -335,7 +341,7 @@ public class SipLayer implements SipListener {
 	 */
 	public void processDialogTerminated(DialogTerminatedEvent evt) {
 		for (MessageProcessor messageProcessor : messageProcessors)
-		messageProcessor.processDialogTerminated(evt);
+			messageProcessor.processDialogTerminated(evt);
 	}
 
 	/**
@@ -410,7 +416,8 @@ public class SipLayer implements SipListener {
 	}
 
 	/**
-	 * Disconnects from a server using the one and only dialog trackt in the client!
+	 * Disconnects from a server using the one and only dialog trackt in the
+	 * client!
 	 * 
 	 * @param serverDialog
 	 */
@@ -426,14 +433,14 @@ public class SipLayer implements SipListener {
 		} catch (SipException e) {
 			e.printStackTrace();
 		}
-	}	
-	
+	}
+
 	public Response createResponse(int statusCode, Request request) throws ParseException {
 		return messageFactory.createResponse(statusCode, request);
 	}
-	
+
 	public void sendResponse(Response response) throws SipException {
 		sipProvider.sendResponse(response);
-	}	
+	}
 
 }
