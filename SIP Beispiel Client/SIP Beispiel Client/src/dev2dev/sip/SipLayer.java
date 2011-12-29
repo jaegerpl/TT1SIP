@@ -21,6 +21,7 @@ import javax.sip.SipListener;
 import javax.sip.SipProvider;
 import javax.sip.SipStack;
 import javax.sip.TimeoutEvent;
+import javax.sip.TransactionAlreadyExistsException;
 import javax.sip.TransactionDoesNotExistException;
 import javax.sip.TransactionTerminatedEvent;
 import javax.sip.TransactionUnavailableException;
@@ -441,6 +442,10 @@ public class SipLayer implements SipListener {
 
 	public void sendResponse(Response response) throws SipException {
 		sipProvider.sendResponse(response);
+	}
+
+	public ServerTransaction getNewServerTransaction(Request request) throws TransactionAlreadyExistsException, TransactionUnavailableException {
+		return sipProvider.getNewServerTransaction(request);		
 	}
 
 }

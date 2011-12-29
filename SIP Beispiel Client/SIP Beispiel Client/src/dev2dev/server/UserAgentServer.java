@@ -9,6 +9,8 @@ import javax.sip.RequestEvent;
 import javax.sip.ResponseEvent;
 import javax.sip.ServerTransaction;
 import javax.sip.SipException;
+import javax.sip.TransactionAlreadyExistsException;
+import javax.sip.TransactionUnavailableException;
 import javax.sip.header.CallIdHeader;
 import javax.sip.header.ContactHeader;
 import javax.sip.message.Response;
@@ -80,10 +82,15 @@ public class UserAgentServer implements MessageProcessor {
 		else {
 			try {
 				Response response = sipLayer.createResponse(Response.DECLINE, requestEvent.getRequest());
-				sipLayer.sendResponse(response);
+				ServerTransaction serverTransaction = requestEvent.getServerTransaction();
+				if (serverTransaction == null)
+					serverTransaction = sipLayer.getNewServerTransaction(requestEvent.getRequest());
+				serverTransaction.sendResponse(response);
 			} catch (ParseException e) {
 				e.printStackTrace();
 			} catch (SipException e) {
+				e.printStackTrace();
+			} catch (InvalidArgumentException e) {
 				e.printStackTrace();
 			}
 		}
@@ -106,6 +113,7 @@ public class UserAgentServer implements MessageProcessor {
 				Response response = sipLayer.createResponse(Response.OK, requestEvent.getRequest());
 				response.addHeader(contactHeader);
 				ServerTransaction serverTransaction = requestEvent.getServerTransaction();
+				if (serverTransaction == null) serverTransaction = sipLayer.getNewServerTransaction(requestEvent.getRequest());
 				serverTransaction.sendResponse(response);
 			} catch (InvalidArgumentException e) {
 				e.printStackTrace();
@@ -140,7 +148,7 @@ public class UserAgentServer implements MessageProcessor {
 	}
 
 	/**
-	 * Handles incoming Invite requests
+	 * Handles incoming Invite requests with responses and adding the dialogs to the waiting list
 	 * 
 	 * @param requestEvent
 	 */
@@ -153,7 +161,56 @@ public class UserAgentServer implements MessageProcessor {
 		// <- 200 OK
 		// ACK ->
 		LOGGER.debug("processInvite()");
-		
+		ServerTransaction serverTransaction = requestEvent.getServerTransaction();
+		if (serverTransaction == null)
+			try {
+				serverTransaction = sipLayer.getNewServerTransaction(requestEvent.getRequest());
+			} catch (TransactionAlreadyExistsException e1) {
+				e1.printStackTrace();
+			} catch (TransactionUnavailableException e1) {
+				e1.printStackTrace();
+			}
+		// if not registered at the proxy decline his invite
+		if (isRegisteredAtProxy == false) {
+			LOGGER.debug("Declining invite from unregistered proxy!");
+			try {
+			Response response = sipLayer.createResponse(Response.DECLINE, requestEvent.getRequest());
+			response.addHeader(contactHeader);			
+			serverTransaction.sendResponse(response);
+			} catch (InvalidArgumentException e) {
+				e.printStackTrace();
+			} catch (ParseException e) {
+				e.printStackTrace();
+			} catch (SipException e) {
+				e.printStackTrace();
+			}
+		}		
+		else {
+			try {
+				// send trying, ringing and ok
+				Response trying = sipLayer.createResponse(Response.TRYING, requestEvent.getRequest());
+				trying.addHeader(contactHeader);
+				serverTransaction.sendResponse(trying);
+				LOGGER.debug("Sent Trying: " + trying.toString());
+				Response ringing = sipLayer.createResponse(Response.RINGING, requestEvent.getRequest());
+				ringing.addHeader(contactHeader);
+				serverTransaction.sendResponse(ringing);
+				LOGGER.debug("Sent Ringing: " + ringing.toString());
+				Response ok = sipLayer.createResponse(Response.OK, requestEvent.getRequest());
+				ok.addHeader(contactHeader);
+				serverTransaction.sendResponse(ok);
+				LOGGER.debug("Sent OK: " + ok.toString());
+				// wait for ACK
+				String dialogId = serverTransaction.getDialog().getDialogId();
+				inactiveDialogs.add(dialogId);
+			} catch (SipException e) {
+				e.printStackTrace();
+			} catch (InvalidArgumentException e) {
+				e.printStackTrace();
+			} catch (ParseException e1) {
+				e1.printStackTrace();
+			}
+		}
 
 	}
 
@@ -163,7 +220,7 @@ public class UserAgentServer implements MessageProcessor {
 	}
 
 	/**
-	 * Handles incoming OK response and checks if registration was successful
+	 * Handles incoming OK responses and checks if registration was successful
 	 * 
 	 * @param responseEvent
 	 */
