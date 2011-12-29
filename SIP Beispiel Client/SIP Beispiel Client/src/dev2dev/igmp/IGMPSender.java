@@ -16,7 +16,7 @@ public class IGMPSender extends IGMPComponent {
 	// Loggerinstanz
 	private static final Logger LOGGER = Logger.getLogger(TAG);
 	// private static final byte TTL = 1;
-	private UserAgentServer textserver;
+	private UserAgentServer userAgentServer;
 
 	public IGMPSender() {
 
@@ -36,8 +36,8 @@ public class IGMPSender extends IGMPComponent {
 	 * @throws IOException
 	 *             Fehler beim erzeugen des IPAdressen-Objekts oder Port
 	 */
-	public void initialize(InetAddress ip, int port, UserAgentServer ts) throws IOException {
-		this.textserver = ts;
+	public void initialize(InetAddress ip, int port, UserAgentServer uas) throws IOException {
+		this.userAgentServer = uas;
 
 		// Socket anlegen
 		mSocket = new MulticastSocket();
@@ -61,7 +61,7 @@ public class IGMPSender extends IGMPComponent {
 		while (isRunning) {
 
 			try {
-				if (textserver.sessionEstablished()) {
+				if (userAgentServer.sessionEstablished()) {
 					mSocket.send(pack);
 					LOGGER.debug("Nachricht erfolgreich gesendet: " + new String(buf));
 				} else {
