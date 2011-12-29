@@ -378,14 +378,14 @@ public class SipLayer implements SipListener {
 	 * Registers the Server with the SIP Proxy
 	 * 
 	 * @param proxyAddress
-	 * @param proxyPort
-	 * @return
+	 * @return callId
 	 * @throws ParseException
 	 * @throws InvalidArgumentException
 	 * @throws SipException
 	 */
-	public String register(String proxyAddress, int proxyPort) throws ParseException, InvalidArgumentException,
+	public String register(String proxyAddress) throws ParseException, InvalidArgumentException,
 			SipException {
+		// Create Register request with proxy as target
 		SipURI from = addressFactory.createSipURI(getUsername(), getHost() + ":" + getPort());
 		Address fromNameAddress = addressFactory.createAddress(from);
 		fromNameAddress.setDisplayName(getUsername());
@@ -400,18 +400,15 @@ public class SipLayer implements SipListener {
 		long sequenceNumber = 1;
 		CSeqHeader cSeqHeader = headerFactory.createCSeqHeader(sequenceNumber, Request.REGISTER);
 		MaxForwardsHeader maxForwards = headerFactory.createMaxForwardsHeader(70);
-
 		Request request = messageFactory.createRequest(requestURI, Request.REGISTER, callIdHeader, cSeqHeader,
 				fromHeader, toHeader, viaHeaders, maxForwards);
-
 		SipURI contactURI = addressFactory.createSipURI(getUsername(), getHost());
 		contactURI.setPort(getPort());
 		Address contactAddress = addressFactory.createAddress(contactURI);
 		contactAddress.setDisplayName(getUsername());
-
 		ContactHeader contactHeader = headerFactory.createContactHeader(contactAddress);
 		request.addHeader(contactHeader);
-
+		// Send Register request to proxy
 		sipProvider.sendRequest(request);
 		return callIdHeader.getCallId();
 	}
