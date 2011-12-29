@@ -303,6 +303,7 @@ public class SipLayer implements SipListener {
 	 * This method is called by the SIP stack when a dialog (session) ends.
 	 */
 	public void processDialogTerminated(DialogTerminatedEvent evt) {
+		messageProcessor.processDialogTerminated(evt);
 	}
 
 	/**

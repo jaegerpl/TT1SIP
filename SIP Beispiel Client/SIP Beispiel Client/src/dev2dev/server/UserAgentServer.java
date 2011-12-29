@@ -56,18 +56,17 @@ public class UserAgentServer implements MessageProcessor {
 	}
 
 	/**
-	 * Handles incoming Ack requests
+	 * Handles incoming Ack requests and adds caller to active dialogs
 	 * 
 	 * @param requestEvent
 	 */
 	@Override
 	public void processAck(RequestEvent requestEvent) {
-		// SIP method ack
 		// SIP implements a three-way handshake.
-		// The caller sends an INVITE
-		// The callee sends an 200 OK to accept the call
-		// The caller sends an ACK to indicate that the handshake is done and a call is going to be setup
-		
+		// Proxy - UAS
+		// INVITE ->
+		// <- 200 OK
+		// ACK ->		
 		String dialogId = requestEvent.getDialog().getDialogId();
 		// sender is known and waiting to establish a dialog
 		if (inactiveDialogs.contains(dialogId)) {
@@ -88,12 +87,15 @@ public class UserAgentServer implements MessageProcessor {
 	}
 
 	/**
-	 * Handles incoming Bye requests
+	 * Handles incoming Bye requests and confirms with OK response
 	 * 
 	 * @param requestEvent
 	 */
 	@Override
 	public void processBye(RequestEvent requestEvent) {
+		// Proxy - UAS
+		// BYE ->
+		// <- 200 OK
 		String dialogId = requestEvent.getDialog().getDialogId();
 		// confirms BYE with OK
 		if (activeDialogs.contains(dialogId)) {
@@ -112,10 +114,16 @@ public class UserAgentServer implements MessageProcessor {
 		}
 	}
 
+	/**
+	 * Handles incoming DialogTerminated and removes caller from active dialogs
+	 * 
+	 * @param dialogTerminatedEvent
+	 */
 	@Override
-	public void processDialogTerminated(DialogTerminatedEvent dte) {
-		// TODO Auto-generated method stub
-
+	public void processDialogTerminated(DialogTerminatedEvent dialogTerminatedEvent) {
+		LOGGER.debug("processDialogTerminated()");
+		String dialogId = dialogTerminatedEvent.getDialog().getDialogId();
+		activeDialogs.remove(dialogId);
 	}
 
 	@Override
@@ -128,9 +136,20 @@ public class UserAgentServer implements MessageProcessor {
 		LOGGER.debug("processInfo()");
 	}
 
+	/**
+	 * Handles incoming Invite requests
+	 * 
+	 * @param requestEvent
+	 */
 	@Override
 	public void processInvite(RequestEvent requestEvent) {
-		// TODO Auto-generated method stub
+		// Proxy - UAS
+		// Invite ->
+		// <- 100 Trying
+		// <- 180 Ringing
+		// <- 200 OK
+		// ACK ->
+		LOGGER.debug("processInvite()");		
 
 	}
 
@@ -139,9 +158,22 @@ public class UserAgentServer implements MessageProcessor {
 		LOGGER.debug("processMessage()");
 	}
 
+	/**
+	 * Handles incoming OK response
+	 * 
+	 * @param responseEvent
+	 */
 	@Override
 	public void processOK(ResponseEvent responseEvent) {
-		// TODO Auto-generated method stub
+		// EIGENTLICH IST UAC FÜR PROCESSOK ZUSTÄNDIG.
+		// UAC - Proxy
+		// INVITE ->
+		// <- 100 TRYING
+		// <- 180 RINGING
+		// <- 200 OK
+		// UAC - UAS
+		// ACK ->
+		LOGGER.debug("processOK()");
 
 	}
 

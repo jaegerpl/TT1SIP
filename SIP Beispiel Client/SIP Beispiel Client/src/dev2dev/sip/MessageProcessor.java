@@ -9,7 +9,7 @@ public interface MessageProcessor {
 
 	public void processBye(RequestEvent requestEvent);
 
-	public void processDialogTerminated(DialogTerminatedEvent dte);
+	public void processDialogTerminated(DialogTerminatedEvent dialogTerminatedEvent);
 
 	public void processError(String error);
 
