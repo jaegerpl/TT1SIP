@@ -27,6 +27,7 @@ public class UserAgentServer implements MessageProcessor {
 	private ContactHeader contactHeader;
 	private Set<String> activeDialogs;
 	private Set<String> inactiveDialogs;
+	private boolean isRegisteredAtProxy = false;
 	
 	public UserAgentServer(SipLayer sipLayer) {
 		this.sipLayer = sipLayer;
@@ -165,16 +166,10 @@ public class UserAgentServer implements MessageProcessor {
 	 */
 	@Override
 	public void processOK(ResponseEvent responseEvent) {
-		// EIGENTLICH IST UAC FÜR PROCESSOK ZUSTÄNDIG.
-		// UAC - Proxy
-		// INVITE ->
-		// <- 100 TRYING
-		// <- 180 RINGING
+		// UAS - Proxy
+		// REGISTER ->
 		// <- 200 OK
-		// UAC - UAS
-		// ACK ->
 		LOGGER.debug("processOK()");
-
 	}
 
 	@Override
