@@ -2,6 +2,7 @@ package dev2dev.sip;
 
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import java.util.TooManyListenersException;
 
@@ -44,7 +45,7 @@ import org.apache.log4j.Logger;
 public class SipLayer implements SipListener {
 	private static final Logger LOGGER = Logger.getLogger("SIPLayer");	
 
-	private MessageProcessor messageProcessor;
+	private List<MessageProcessor> messageProcessors;
 
 	private String username;
 
@@ -109,6 +110,8 @@ public class SipLayer implements SipListener {
 		sipProvider.addSipListener(this);
 		sipProvider = sipStack.createSipProvider(udp);
 		sipProvider.addSipListener(this);
+		
+		messageProcessors = new ArrayList<MessageProcessor>();
 	}
 
 	/**
@@ -241,11 +244,26 @@ public class SipLayer implements SipListener {
 		int status = response.getStatusCode();
 		
 		//Handlen der verschiedenen Responses
-		if (status == Response.TRYING) messageProcessor.processTrying();
-		if (status >= Response.OK && status <= 300) messageProcessor.processInfo("--Sent");
-		else messageProcessor.processError("Previous message not sent: " + status);
-		if (status == Response.OK) messageProcessor.processOK(evt);
-		if (status == Response.RINGING)	messageProcessor.processRinging();		
+		if (status == Response.TRYING) {
+			for (MessageProcessor messageProcessor : messageProcessors)
+			messageProcessor.processTrying();
+		}
+		if (status >= Response.OK && status <= 300){
+			for (MessageProcessor messageProcessor : messageProcessors)
+			messageProcessor.processInfo("--Sent");
+		}
+		else {
+			for (MessageProcessor messageProcessor : messageProcessors)
+			messageProcessor.processError("Previous message not sent: " + status);
+		}
+		if (status == Response.OK) {
+			for (MessageProcessor messageProcessor : messageProcessors)
+			messageProcessor.processOK(evt);
+		}
+		if (status == Response.RINGING) {
+			for (MessageProcessor messageProcessor : messageProcessors)
+			messageProcessor.processRinging();		
+		}
 	}
 
 	/**
@@ -263,6 +281,7 @@ public class SipLayer implements SipListener {
 		// Handlen der verschiedenen Requests
 		if (method.equals("MESSAGE")) {
 			FromHeader from = (FromHeader) req.getHeader("From");
+			for (MessageProcessor messageProcessor : messageProcessors)
 			messageProcessor.processMessage(from.getAddress().toString(),
 					new String(req.getRawContent()));
 			Response response = null;
@@ -275,12 +294,22 @@ public class SipLayer implements SipListener {
 				st.sendResponse(response);
 			} catch (Throwable e) {
 				e.printStackTrace();
+				for (MessageProcessor messageProcessor : messageProcessors)
 				messageProcessor.processError("Can't send OK reply.");
 			}
 		}
-		else if (method.equals(Request.ACK)) messageProcessor.processAck(evt);
-		else if (method.equals(Request.INVITE))	messageProcessor.processInvite(evt);
-		else if (method.equals(Request.BYE)) messageProcessor.processBye(evt);				
+		else if (method.equals(Request.ACK)) {
+			for (MessageProcessor messageProcessor : messageProcessors)
+			messageProcessor.processAck(evt);
+		}
+		else if (method.equals(Request.INVITE)) {
+			for (MessageProcessor messageProcessor : messageProcessors)
+			messageProcessor.processInvite(evt);
+		}
+		else if (method.equals(Request.BYE)) {
+			for (MessageProcessor messageProcessor : messageProcessors)
+			messageProcessor.processBye(evt);				
+		}
 	}
 
 	/**
@@ -288,6 +317,7 @@ public class SipLayer implements SipListener {
 	 * message. Note that this is treated differently from an error message.
 	 */
 	public void processTimeout(TimeoutEvent evt) {
+		for (MessageProcessor messageProcessor : messageProcessors)
 		messageProcessor.processError("Previous message not sent: " + "timeout");
 	}
 
@@ -296,6 +326,7 @@ public class SipLayer implements SipListener {
 	 * message transmission error.
 	 */
 	public void processIOException(IOExceptionEvent evt) {
+		for (MessageProcessor messageProcessor : messageProcessors)
 		messageProcessor.processError("Previous message not sent: " + "I/O Exception");
 	}
 
@@ -303,6 +334,7 @@ public class SipLayer implements SipListener {
 	 * This method is called by the SIP stack when a dialog (session) ends.
 	 */
 	public void processDialogTerminated(DialogTerminatedEvent evt) {
+		for (MessageProcessor messageProcessor : messageProcessors)
 		messageProcessor.processDialogTerminated(evt);
 	}
 
@@ -327,12 +359,12 @@ public class SipLayer implements SipListener {
 		return username;
 	}
 
-	public MessageProcessor getMessageProcessor() {
-		return messageProcessor;
+	public List<MessageProcessor> getMessageProcessors() {
+		return messageProcessors;
 	}
 
-	public void setMessageProcessor(MessageProcessor newMessageProcessor) {
-		messageProcessor = newMessageProcessor;
+	public void addMessageProcessor(MessageProcessor newMessageProcessor) {
+		messageProcessors.add(newMessageProcessor);
 	}
 
 	/**

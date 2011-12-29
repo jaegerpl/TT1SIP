@@ -72,7 +72,7 @@ public class TextClient extends JFrame implements MessageProcessor {
 			// Starting TextClient
 			SipLayer sipLayer = new SipLayer(username, ip, port);
 			TextClient tc = new TextClient(sipLayer);
-			sipLayer.setMessageProcessor(tc);
+			sipLayer.addMessageProcessor(tc);
 
 			tc.show();
 		} catch (Throwable e) {

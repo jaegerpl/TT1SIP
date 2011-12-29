@@ -30,7 +30,7 @@ public class UserAgentServer implements MessageProcessor {
 	
 	public UserAgentServer(SipLayer sipLayer) {
 		this.sipLayer = sipLayer;
-		sipLayer.setMessageProcessor(this);
+		sipLayer.addMessageProcessor(this);
 		try {
 			contactHeader = sipLayer.getContactHeader();		
 			sipLayer.register(PROXY_ADDRESS, PROXY_PORT);
