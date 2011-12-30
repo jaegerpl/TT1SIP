@@ -40,11 +40,8 @@ public class TextClient extends JFrame implements MessageProcessor {
 	private JLabel receivedLbl;
 	private JTextArea receivedMessages;
 	private JScrollPane receivedScrollPane;
-	private JButton sendBtn;
 	private JButton connectServerButton;
 	private JButton joinIGMPButton;
-	private JLabel sendLbl;
-	private JTextField sendMessages;
 	private JTextField toAddress;
 	private JLabel toLbl;
 
@@ -99,19 +96,17 @@ public class TextClient extends JFrame implements MessageProcessor {
 		String from = "sip:" + sip.getUsername() + "@" + sip.getHost() + ":"
 				+ sip.getPort();
 		this.fromAddress.setText(from);
+		
 	}
 
 	private void initWindow() {
 		receivedLbl = new JLabel();
-		sendLbl = new JLabel();
-		sendMessages = new JTextField();
 		receivedScrollPane = new JScrollPane();
 		receivedMessages = new JTextArea();
 		fromLbl = new JLabel();
 		fromAddress = new JTextField();
 		toLbl = new JLabel();
 		toAddress = new JTextField();
-		sendBtn = new JButton();
 		connectServerButton = new JButton();
 		joinIGMPButton = new JButton();
 
@@ -130,13 +125,6 @@ public class TextClient extends JFrame implements MessageProcessor {
 		getContentPane().add(receivedLbl);
 		receivedLbl.setBounds(5, 0, 136, 20);
 
-		sendLbl.setText("Send Message:");
-		getContentPane().add(sendLbl);
-		sendLbl.setBounds(5, 150, 90, 20);
-
-		getContentPane().add(sendMessages);
-		sendMessages.setBounds(5, 170, 270, 20);
-
 		receivedMessages.setAlignmentX(0.0F);
 		receivedMessages.setEditable(false);
 		receivedMessages.setLineWrap(true);
@@ -150,28 +138,18 @@ public class TextClient extends JFrame implements MessageProcessor {
 
 		fromLbl.setText("From:");
 		getContentPane().add(fromLbl);
-		fromLbl.setBounds(5, 200, 35, 15);
+		fromLbl.setBounds(5, 151, 35, 15);
 
 		getContentPane().add(fromAddress);
-		fromAddress.setBounds(40, 200, 235, 20);
+		fromAddress.setBounds(40, 151, 235, 20);
 		fromAddress.setEditable(false);
 
-		toLbl.setText("To:");
+		toLbl.setText("Join:");
 		getContentPane().add(toLbl);
-		toLbl.setBounds(5, 225, 35, 15);
+		toLbl.setBounds(5, 175, 35, 15);
 
 		getContentPane().add(toAddress);
-		toAddress.setBounds(40, 225, 235, 21);
-
-		sendBtn.setText("Send");
-		sendBtn.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent evt) {
-				sendBtnActionPerformed(evt);
-			}
-		});
-
-		getContentPane().add(sendBtn);
-		sendBtn.setBounds(200, 255, 75, 25);
+		toAddress.setBounds(40, 175, 235, 21);
 
 		connectServerButton.setText("Con2Server");
 		connectServerButton.addActionListener(new ActionListener() {
@@ -199,18 +177,18 @@ public class TextClient extends JFrame implements MessageProcessor {
 				288, 320);
 	}
 
-	private void sendBtnActionPerformed(ActionEvent evt) {
-
-		try {
-			String to = this.toAddress.getText();
-			String message = this.sendMessages.getText();
-			sipLayer.sendMessage(to, message);
-		} catch (Throwable e) {
-			e.printStackTrace();
-			this.receivedMessages.append("ERROR sending message: "
-					+ e.getMessage() + "\n");
-		}
-	}
+//	private void sendBtnActionPerformed(ActionEvent evt) {
+//
+//		try {
+//			String to = this.toAddress.getText();
+//			String message = this.sendMessages.getText();
+//			sipLayer.sendMessage(to, message);
+//		} catch (Throwable e) {
+//			e.printStackTrace();
+//			this.receivedMessages.append("ERROR sending message: "
+//					+ e.getMessage() + "\n");
+//		}
+//	}
 
 	/**
 	 * When pressing "Call" the TextClient will join an IGMP Group and send an
@@ -264,6 +242,7 @@ public class TextClient extends JFrame implements MessageProcessor {
 			try {
 				igmpListener.initialize(
 						InetAddress.getByName("239.238.237.17"), 9017, this);
+				Thread t = new Thread(igmpListener);
 			} catch (UnknownHostException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
