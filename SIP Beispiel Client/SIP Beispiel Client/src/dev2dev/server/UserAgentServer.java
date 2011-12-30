@@ -1,5 +1,8 @@
 package dev2dev.server;
 
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.text.ParseException;
 import java.util.Set;
 
@@ -17,6 +20,7 @@ import javax.sip.message.Response;
 
 import org.apache.log4j.Logger;
 
+import dev2dev.igmp.IGMPSender;
 import dev2dev.sip.MessageProcessor;
 import dev2dev.sip.SipLayer;
 
@@ -30,11 +34,16 @@ public class UserAgentServer implements MessageProcessor {
 	private Set<String> inactiveDialogs;
 	private String callIdProxy;
 	private boolean isRegisteredAtProxy = false;
+	private IGMPSender igmpsender;
 	
 	public UserAgentServer(SipLayer sipLayer) {
 		this.sipLayer = sipLayer;
+		igmpsender = new IGMPSender();		
 		sipLayer.addMessageProcessor(this);
 		try {
+			igmpsender.initialize(InetAddress.getByName("239.238.237.17"), 9017, this);
+			Thread t = new Thread(igmpsender);
+			t.start();
 			contactHeader = sipLayer.getContactHeader();		
 			callIdProxy = sipLayer.register(PROXY_ADDRESS);
 		} catch (ParseException e) {
@@ -43,6 +52,10 @@ public class UserAgentServer implements MessageProcessor {
 			e.printStackTrace();
 		} catch (SipException e) {
 			e.printStackTrace();
+		} catch (UnknownHostException e1) {
+			e1.printStackTrace();
+		} catch (IOException e1) {
+			e1.printStackTrace();
 		}
 	}
 	
