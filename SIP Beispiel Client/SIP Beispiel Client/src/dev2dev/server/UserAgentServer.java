@@ -20,9 +20,11 @@ import javax.sip.message.Response;
 
 import org.apache.log4j.Logger;
 
+import dev2dev.igmp.IGMPListener;
 import dev2dev.igmp.IGMPSender;
 import dev2dev.sip.MessageProcessor;
 import dev2dev.sip.SipLayer;
+import dev2dev.textclient.TextClient;
 
 public class UserAgentServer implements MessageProcessor {
 	private static final Logger LOGGER = Logger.getLogger("UserAgentServer");	
@@ -35,6 +37,27 @@ public class UserAgentServer implements MessageProcessor {
 	private String callIdProxy;
 	private boolean isRegisteredAtProxy = false;
 	private IGMPSender igmpsender;
+	
+	public static void main(String[] args) {
+
+		try {
+			String username = "Torben-Pascal-Server";
+			int port = 4321;
+			String localHost = InetAddress.getLocalHost().getHostName();
+			String ip = InetAddress.getByName(localHost).getHostAddress();
+
+			// Starting UAS
+			SipLayer sipLayer = new SipLayer(username, ip, port);
+			UserAgentServer uas = new UserAgentServer(sipLayer);
+			sipLayer.addMessageProcessor(uas);
+
+			System.out.println("Server -"+username+"- hšrt auf Port: "+port);
+		} catch (Throwable e) {
+			System.out.println("Problem initializing the SIP stack.");
+			e.printStackTrace();
+			System.exit(-1);
+		}
+	}
 	
 	public UserAgentServer(SipLayer sipLayer) {
 		this.sipLayer = sipLayer;
