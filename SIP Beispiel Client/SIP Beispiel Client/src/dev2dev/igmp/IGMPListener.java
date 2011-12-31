@@ -17,7 +17,7 @@ public class IGMPListener extends IGMPComponent{
 	public static final String TAG = "IGMPListener";
 
 	// Loggerinstanz
-	private static final Logger LOGGER = Logger.getLogger(TAG);
+	private static final Logger LOGGER = Logger.getLogger(IGMPListener.class);
 
 	/**
 	 * Initialisiert den MulticastSocket 

@@ -32,8 +32,10 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 
+import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.apache.log4j.SimpleLayout;
 
 import dev2dev.igmp.IGMPListener;
 import dev2dev.sip.MessageProcessor;
@@ -108,6 +110,7 @@ public class TextClient extends JFrame implements MessageProcessor, TableModelLi
 	public TextClient(SipLayer sip) {
 		super();
 		log = Logger.getLogger(TextClient.class);
+		log.addAppender(new ConsoleAppender(new SimpleLayout()));
 		log.setLevel(Level.ALL);
 		sipLayer = sip;
 		initWindow();
@@ -220,15 +223,20 @@ public class TextClient extends JFrame implements MessageProcessor, TableModelLi
 	private void disconnectServer() {		
 		Dialog dialog;
 		String server = toAddress.getText();
-		dialog = dataModel.getServerDialog(server);
-		
-		log.debug("Disconnecting from server"+ dialog);		
-		
-		dataModel.removeServer(dialog);
-		toAddress.setText("");
-		
-		sipLayer.hangUp(dialog);
-		log.debug("Done hanging up.");
+		if(server.equals("")){
+			log.debug("Kein Server ausgewählt zum disconnecten");
+		}
+		else {
+			dialog = dataModel.getServerDialog(server);
+			
+			log.debug("Disconnecting from server"+ dialog);		
+			
+			dataModel.removeServer(dialog);
+			toAddress.setText("");
+			
+			sipLayer.hangUp(dialog);
+			log.debug("Done hanging up.");
+		}
 	}
 
 	/**
@@ -245,7 +253,7 @@ public class TextClient extends JFrame implements MessageProcessor, TableModelLi
 		// Calling (INVITE)
 		if (connectServerButton.getText() == "Con2Server" &&
 				!(toAddress.getText().equals(""))) {
-			log.debug("Connecting to Server...");
+			log.info("Connecting to Server...");
 			String to = this.toAddress.getText();
 			try {
 				serverDialog = sipLayer.startCall(to);
@@ -261,9 +269,8 @@ public class TextClient extends JFrame implements MessageProcessor, TableModelLi
 			} catch (SipException e) {
 				e.printStackTrace();
 			}
-			log.debug("Done. Call established");
 		} else {
-			System.out.println("Fehler im Call-HangUp-Handling");
+			log.info("Kein Server zum connecten ausgewählt.");
 		}
 	}
 
