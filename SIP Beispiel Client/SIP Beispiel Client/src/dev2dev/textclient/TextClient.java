@@ -9,30 +9,44 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.text.ParseException;
 
+import javax.sip.ClientTransaction;
 import javax.sip.Dialog;
 import javax.sip.DialogTerminatedEvent;
 import javax.sip.InvalidArgumentException;
 import javax.sip.RequestEvent;
 import javax.sip.ResponseEvent;
+import javax.sip.ServerTransaction;
 import javax.sip.SipException;
+import javax.sip.message.Request;
+import javax.sip.message.Response;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import dev2dev.igmp.IGMPListener;
 import dev2dev.sip.MessageProcessor;
 import dev2dev.sip.SipLayer;
 
-public class TextClient extends JFrame implements MessageProcessor {
+public class TextClient extends JFrame implements MessageProcessor, TableModelListener {
 
-	private static final Logger LOGGER = Logger.getLogger("TextClient");
+//	private static final Logger LOGGER = Logger.getLogger("TextClient");
+	private Logger log;
 
 	private SipLayer sipLayer;
+	
+	ClientControll dataModel;
 
 	// GUI STUFF
 	private JTextField fromAddress;
@@ -41,9 +55,11 @@ public class TextClient extends JFrame implements MessageProcessor {
 	private JTextArea receivedMessages;
 	private JScrollPane receivedScrollPane;
 	private JButton connectServerButton;
+	private JButton disconnectServerButton;
 	private JButton joinIGMPButton;
 	private JTextField toAddress;
 	private JLabel toLbl;
+	private JTable serverTable = new JTable(dataModel);
 
 	// SIP STUFF
 	private Dialog serverDialog; // the dialog received when sending INVITE to a
@@ -91,12 +107,17 @@ public class TextClient extends JFrame implements MessageProcessor {
 
 	public TextClient(SipLayer sip) {
 		super();
+		log = Logger.getLogger(TextClient.class);
+		log.setLevel(Level.ALL);
 		sipLayer = sip;
 		initWindow();
 		String from = "sip:" + sip.getUsername() + "@" + sip.getHost() + ":"
 				+ sip.getPort();
 		this.fromAddress.setText(from);
-		
+		dataModel = new ClientControll(this);
+		serverTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		serverTable.getModel().addTableModelListener(this);
+		serverTable.getSelectionModel().addListSelectionListener(new RowListener());
 	}
 
 	private void initWindow() {
@@ -108,7 +129,9 @@ public class TextClient extends JFrame implements MessageProcessor {
 		toLbl = new JLabel();
 		toAddress = new JTextField();
 		connectServerButton = new JButton();
+		disconnectServerButton = new JButton();
 		joinIGMPButton = new JButton();
+		JScrollPane scrollpane = new JScrollPane(serverTable);
 
 		getContentPane().setLayout(null);
 
@@ -150,45 +173,63 @@ public class TextClient extends JFrame implements MessageProcessor {
 
 		getContentPane().add(toAddress);
 		toAddress.setBounds(40, 175, 235, 21);
+		
+		getContentPane().add(scrollpane);
+		scrollpane.setBounds(5, 200, 270, 200);
 
 		connectServerButton.setText("Con2Server");
 		connectServerButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
-				callBtnActionPerformed(evt);
+				connectServer();
 			}
 		});
 
+		disconnectServerButton.setText("Discon. Server");
+		disconnectServerButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				disconnectServer();
+			}
+		});
+		
 		getContentPane().add(connectServerButton);
-		connectServerButton.setBounds(1, 255, 100, 25);
+		connectServerButton.setBounds(1, 405, 150, 25);
 
+		getContentPane().add(disconnectServerButton);
+		disconnectServerButton.setBounds(1, 435, 150, 25);
+		
 		joinIGMPButton.setText("JoinGroup");
 		joinIGMPButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
-				IGMPJoinButtonActionPerformed(evt);
+				joinIGMPGroup();
 			}
 		});
 
 		getContentPane().add(joinIGMPButton);
-		joinIGMPButton.setBounds(102, 255, 100, 25);
+		joinIGMPButton.setBounds(152, 405, 130, 25);
 
 		java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit()
 				.getScreenSize();
-		setBounds((screenSize.width - 288) / 2, (screenSize.height - 310) / 2,
-				288, 320);
+		setBounds((screenSize.width - 288) / 2, (screenSize.height - 500) / 2,
+				288, 500);
 	}
 
-//	private void sendBtnActionPerformed(ActionEvent evt) {
-//
-//		try {
-//			String to = this.toAddress.getText();
-//			String message = this.sendMessages.getText();
-//			sipLayer.sendMessage(to, message);
-//		} catch (Throwable e) {
-//			e.printStackTrace();
-//			this.receivedMessages.append("ERROR sending message: "
-//					+ e.getMessage() + "\n");
-//		}
-//	}
+	/**
+	 * Disconnect from the server displayed in the toAddress field and then remove 
+	 * from the list of servers in the gui
+	 */
+	private void disconnectServer() {		
+		Dialog dialog;
+		String server = toAddress.getText();
+		dialog = dataModel.getServerDialog(server);
+		
+		log.debug("Disconnecting from server"+ dialog);		
+		
+		dataModel.removeServer(dialog);
+		toAddress.setText("");
+		
+		sipLayer.hangUp(dialog);
+		log.debug("Done hanging up.");
+	}
 
 	/**
 	 * When pressing "Call" the TextClient will join an IGMP Group and send an
@@ -199,15 +240,20 @@ public class TextClient extends JFrame implements MessageProcessor {
 	 * 
 	 * @param evt
 	 */
-	private void callBtnActionPerformed(ActionEvent evt) {
+	private void connectServer() {
 
 		// Calling (INVITE)
-		if (connectServerButton.getText() == "Call") {
-			System.out.println("Calling...");
+		if (connectServerButton.getText() == "Con2Server" &&
+				!(toAddress.getText().equals(""))) {
+			log.debug("Connecting to Server...");
 			String to = this.toAddress.getText();
 			try {
-				connectServerButton.setText("Hang up");
 				serverDialog = sipLayer.startCall(to);
+				// if server successfully joined, clean GUI
+				if(serverDialog != null){
+					dataModel.addServer(serverDialog, to);
+					toAddress.setText("");
+				}
 			} catch (ParseException e) {
 				e.printStackTrace();
 			} catch (InvalidArgumentException e) {
@@ -215,17 +261,10 @@ public class TextClient extends JFrame implements MessageProcessor {
 			} catch (SipException e) {
 				e.printStackTrace();
 			}
-			System.out.println("Done. Call established");
-			// Hanging UP (BYE)
-		} else if (connectServerButton.getText() == "Hang up") {
-			connectServerButton.setText("Call");
-			System.out.println("Hanging up...");
-			sipLayer.hangUp(serverDialog);
-			System.out.println("Done hanging up.");
+			log.debug("Done. Call established");
 		} else {
 			System.out.println("Fehler im Call-HangUp-Handling");
 		}
-
 	}
 
 	/**
@@ -235,7 +274,7 @@ public class TextClient extends JFrame implements MessageProcessor {
 	 * 
 	 * @param evt
 	 */
-	private void IGMPJoinButtonActionPerformed(ActionEvent evt) {
+	private void joinIGMPGroup() {
 		if (joinIGMPButton.getText() == "JoinGroup") {
 			System.out.println("Joining Group...");
 			// Join IGMP Group
@@ -243,6 +282,7 @@ public class TextClient extends JFrame implements MessageProcessor {
 				igmpListener.initialize(
 						InetAddress.getByName("239.238.237.17"), 9017, this);
 				Thread t = new Thread(igmpListener);
+				t.start();
 			} catch (UnknownHostException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
@@ -263,15 +303,15 @@ public class TextClient extends JFrame implements MessageProcessor {
 	}
 
 	public void processAck(RequestEvent requestEvent) {
-		LOGGER.debug("processAck()");
+		log.debug("processAck()");
 	}
 
 	public void processBye(RequestEvent requestEvent) {
-		LOGGER.debug("processBye()");
+		log.debug("processBye()");
 	}
 
 	public void processDialogTerminated(DialogTerminatedEvent dte) {
-		LOGGER.debug("processDialogTerminated()");
+		log.debug("processDialogTerminated()");
 	}
 
 	public void processError(String errorMessage) {
@@ -283,18 +323,49 @@ public class TextClient extends JFrame implements MessageProcessor {
 	}
 
 	public void processInvite(RequestEvent requestEvent) {
-		LOGGER.debug("processInvite()");
+		log.debug("processInvite()");
 	}
 
 	public void processOK(ResponseEvent responseEvent) {
-		LOGGER.debug("processOK()");
+		// OK Message means the connection to the server is established
+		// Sent ACK as reply
+		Dialog dia = responseEvent.getDialog();
+		
+		Request ackRequest;
+		try {
+			ackRequest = dia.createRequest(Request.ACK);
+			dia.sendAck(ackRequest);
+		} catch (SipException e) {			
+			e.printStackTrace();
+		} 	
+		
+		dataModel.markServerAsConnected(dia);
+		log.debug("processOK()");
 	}
 
 	public void processRinging() {
-		LOGGER.debug("processRinging()");
+		log.debug("processRinging()");
 	}
 
 	public void processTrying() {
-		LOGGER.debug("processTrying()");
+		log.debug("processTrying()");
+	}
+    
+    private class RowListener implements ListSelectionListener {
+        public void valueChanged(ListSelectionEvent event) {
+            if (event.getValueIsAdjusting()) {
+                return;
+            }            
+            serverTable.getSelectionModel().getLeadSelectionIndex();
+            serverTable.getColumnModel().getSelectionModel().getLeadSelectionIndex();
+     
+        int[] rows = serverTable.getSelectedRows();
+        toAddress.setText(serverTable.getValueAt(rows[0], 0).toString());
+        }
+    }
+
+	@Override
+	public void tableChanged(TableModelEvent e) {
+		serverTable.repaint();
 	}
 }
