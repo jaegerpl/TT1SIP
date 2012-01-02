@@ -22,9 +22,18 @@ import com.sun.tools.javac.util.Pair;
  */
 public class ClientControll extends AbstractTableModel{
 	
+	// servers that have been send an INVITE
 	private ArrayList<Pair> knownServers = new ArrayList<Pair>();
+	
+	// servers that are successfully connected to the client (INVITE, OK and ACK are transmitted)
 	private ArrayList<Pair> connectedServers = new ArrayList<Pair>();
+	
+	// servers that have been sent an BYE, but did not reply with an OK
+	private ArrayList<Pair> disconnectingServers = new ArrayList<Pair>();
+	
+	// list of connected servers for the GUI
 	private ArrayList<String> serverTable = new ArrayList<String>();
+	
 	private TextClient client;
 	
 	public ClientControll(TextClient client){
@@ -94,6 +103,10 @@ public class ClientControll extends AbstractTableModel{
 				fireTableChanged(null);
 			}
 		}
+	}
+	
+	public void disconnectServer(Dialog dia) {
+		
 	}
 	
 	/**

@@ -17,6 +17,7 @@ import javax.sip.RequestEvent;
 import javax.sip.ResponseEvent;
 import javax.sip.ServerTransaction;
 import javax.sip.SipException;
+import javax.sip.header.CSeqHeader;
 import javax.sip.message.Request;
 import javax.sip.message.Response;
 import javax.swing.JButton;
@@ -227,15 +228,9 @@ public class TextClient extends JFrame implements MessageProcessor, TableModelLi
 			log.debug("Kein Server ausgewŠhlt zum disconnecten");
 		}
 		else {
-			dialog = dataModel.getServerDialog(server);
-			
-			log.debug("Disconnecting from server"+ dialog);		
-			
-			dataModel.removeServer(dialog);
-			toAddress.setText("");
-			
-			sipLayer.hangUp(dialog);
-			log.debug("Done hanging up.");
+			dialog = dataModel.getServerDialog(server);			
+			sipLayer.hangUp(dialog);			
+			log.debug("Sending BYE to server:"+dialog.getDialogId());
 		}
 	}
 
@@ -334,20 +329,44 @@ public class TextClient extends JFrame implements MessageProcessor, TableModelLi
 	}
 
 	public void processOK(ResponseEvent responseEvent) {
-		// OK Message means the connection to the server is established
-		// Sent ACK as reply
+		// OK Message means 
+		// 1 - the connection to the server is established
+		//     Sent ACK as reply
+		// 2 - BYE Request has been understood
+		//     remove server from list
+		
+		Response respones = responseEvent.getResponse();
+		CSeqHeader cseq = (CSeqHeader) respones.getHeader(CSeqHeader.NAME);
 		Dialog dia = responseEvent.getDialog();
 		
-		Request ackRequest;
-		try {
-			ackRequest = dia.createRequest(Request.ACK);
-			dia.sendAck(ackRequest);
-		} catch (SipException e) {			
-			e.printStackTrace();
-		} 	
+		// 1 
+		// INVITE -> 
+		// OK     <-
+		if (cseq.getMethod().equals(Request.INVITE)) {
+			Request ackRequest;
+			log.debug("Receiving OK after INVITE");			
+			try {
+				ackRequest = dia.createRequest(Request.ACK);
+				dia.sendAck(ackRequest);
+			} catch (SipException e) {			
+				e.printStackTrace();
+			} 	
+			
+			dataModel.markServerAsConnected(dia);
+			log.debug("processOK() after INVITE");
+		}		
 		
-		dataModel.markServerAsConnected(dia);
-		log.debug("processOK()");
+		// 2 
+		// BYE -> 
+		// OK  <-
+		if (cseq.getMethod().equals(Request.BYE)) {
+			dataModel.disconnectServer(dia);		
+			log.debug("Receiving OK after BYE from server"+ dia);		
+					
+			dataModel.removeServer(dia);
+			toAddress.setText("");
+			log.debug("processOK() after BYE");
+		}
 	}
 
 	public void processRinging() {

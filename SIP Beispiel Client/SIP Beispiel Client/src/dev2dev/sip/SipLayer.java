@@ -419,8 +419,6 @@ public class SipLayer implements SipListener {
 	}
 
 	/**
-	 * Disconnects from a server using the one and only dialog trackt in the
-	 * client!
 	 * 
 	 * @param serverDialog
 	 */
