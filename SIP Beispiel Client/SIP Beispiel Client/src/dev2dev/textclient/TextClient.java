@@ -39,8 +39,7 @@ import dev2dev.sip.SipLayer;
 
 public class TextClient extends JFrame implements MessageProcessor, TableModelListener {
 
-//	private static final Logger LOGGER = Logger.getLogger("TextClient");
-	private Logger log;
+	private static final Logger LOGGER = Logger.getLogger(TextClient.class);
 
 	private SipLayer sipLayer;
 	
@@ -105,7 +104,6 @@ public class TextClient extends JFrame implements MessageProcessor, TableModelLi
 
 	public TextClient(SipLayer sip) {
 		super();
-		log = Logger.getLogger(TextClient.class);
 		sipLayer = sip;
 		initWindow();
 		String from = "sip:" + sip.getUsername() + "@" + sip.getHost() + ":"
@@ -219,12 +217,12 @@ public class TextClient extends JFrame implements MessageProcessor, TableModelLi
 		Dialog dialog;
 		String server = toAddress.getText();
 		if(server.equals("")){
-			log.debug("Kein Server ausgewählt zum disconnecten");
+			LOGGER.debug("Kein Server ausgewählt zum disconnecten");
 		}
 		else {
 			dialog = dataModel.getServerDialog(server);			
 			sipLayer.hangUp(dialog);			
-			log.debug("Sending BYE to server:"+dialog.getDialogId());
+			LOGGER.debug("Sending BYE to server:"+dialog.getDialogId());
 		}
 	}
 
@@ -242,7 +240,7 @@ public class TextClient extends JFrame implements MessageProcessor, TableModelLi
 		// Calling (INVITE)
 		if (connectServerButton.getText() == "Con2Server" &&
 				!(toAddress.getText().equals(""))) {
-			log.info("Connecting to Server...");
+			LOGGER.info("Connecting to Server...");
 			String to = this.toAddress.getText();
 			try {
 				serverDialog = sipLayer.startCall(to);
@@ -259,7 +257,7 @@ public class TextClient extends JFrame implements MessageProcessor, TableModelLi
 				e.printStackTrace();
 			}
 		} else {
-			log.info("Kein Server zum connecten ausgewählt.");
+			LOGGER.info("Kein Server zum connecten ausgewählt.");
 		}
 	}
 
@@ -299,15 +297,15 @@ public class TextClient extends JFrame implements MessageProcessor, TableModelLi
 	}
 
 	public void processAck(RequestEvent requestEvent) {
-		log.debug("processAck()");
+		LOGGER.debug("processAck()");
 	}
 
 	public void processBye(RequestEvent requestEvent) {
-		log.debug("processBye()");
+		LOGGER.debug("processBye()");
 	}
 
 	public void processDialogTerminated(DialogTerminatedEvent dte) {
-		log.debug("processDialogTerminated()");
+		LOGGER.debug("processDialogTerminated()");
 	}
 
 	public void processError(String errorMessage) {
@@ -319,7 +317,7 @@ public class TextClient extends JFrame implements MessageProcessor, TableModelLi
 	}
 
 	public void processInvite(RequestEvent requestEvent) {
-		log.debug("processInvite()");
+		LOGGER.debug("processInvite()");
 	}
 
 	public void processOK(ResponseEvent responseEvent) {
@@ -338,7 +336,7 @@ public class TextClient extends JFrame implements MessageProcessor, TableModelLi
 		// OK     <-
 		if (cseq.getMethod().equals(Request.INVITE)) {
 			Request ackRequest;
-			log.debug("Receiving OK after INVITE");			
+			LOGGER.debug("Receiving OK after INVITE");			
 			try {
 				ackRequest = dia.createRequest(Request.ACK);
 				dia.sendAck(ackRequest);
@@ -347,7 +345,7 @@ public class TextClient extends JFrame implements MessageProcessor, TableModelLi
 			} 	
 			
 			dataModel.markServerAsConnected(dia);
-			log.debug("processOK() after INVITE");
+			LOGGER.debug("processOK() after INVITE");
 		}		
 		
 		// 2 
@@ -355,20 +353,20 @@ public class TextClient extends JFrame implements MessageProcessor, TableModelLi
 		// OK  <-
 		if (cseq.getMethod().equals(Request.BYE)) {
 			dataModel.disconnectServer(dia);		
-			log.debug("Receiving OK after BYE from server"+ dia);		
+			LOGGER.debug("Receiving OK after BYE from server"+ dia);		
 					
 			dataModel.removeServer(dia);
 			toAddress.setText("");
-			log.debug("processOK() after BYE");
+			LOGGER.debug("processOK() after BYE");
 		}
 	}
 
 	public void processRinging() {
-		log.debug("processRinging()");
+		LOGGER.debug("processRinging()");
 	}
 
 	public void processTrying() {
-		log.debug("processTrying()");
+		LOGGER.debug("processTrying()");
 	}
     
     private class RowListener implements ListSelectionListener {

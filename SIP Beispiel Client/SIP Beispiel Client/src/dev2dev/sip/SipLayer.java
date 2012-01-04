@@ -44,7 +44,7 @@ import javax.sip.message.Response;
 import org.apache.log4j.Logger;
 
 public class SipLayer implements SipListener {
-	private static final Logger LOGGER = Logger.getLogger("SIPLayer");
+	private static final Logger LOGGER = Logger.getLogger(SipLayer.class);
 
 	private List<MessageProcessor> messageProcessors;
 
@@ -325,7 +325,7 @@ public class SipLayer implements SipListener {
 	 */
 	public void processTimeout(TimeoutEvent evt) {
 		for (MessageProcessor messageProcessor : messageProcessors)
-			messageProcessor.processError("Previous message not sent: " + "timeout");
+			messageProcessor.processError("Timeout " + "timeout");
 	}
 
 	/**
@@ -334,7 +334,7 @@ public class SipLayer implements SipListener {
 	 */
 	public void processIOException(IOExceptionEvent evt) {
 		for (MessageProcessor messageProcessor : messageProcessors)
-			messageProcessor.processError("Previous message not sent: " + "I/O Exception");
+			messageProcessor.processError("I/O Exception " + "I/O Exception");
 	}
 
 	/**

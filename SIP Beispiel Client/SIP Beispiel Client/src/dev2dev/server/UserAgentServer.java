@@ -26,7 +26,7 @@ import dev2dev.sip.MessageProcessor;
 import dev2dev.sip.SipLayer;
 
 public class UserAgentServer implements MessageProcessor {
-	private static final Logger LOGGER = Logger.getLogger("UserAgentServer");	
+	private static final Logger LOGGER = Logger.getLogger(UserAgentServer.class);	
 	private static String PROXY_ADDRESS = "tiserver03.cpt.haw-hamburg.de";
 	
 	private SipLayer sipLayer;
