@@ -9,8 +9,6 @@ import java.util.Map.Entry;
 import javax.sip.Dialog;
 import javax.swing.table.AbstractTableModel;
 
-import com.sun.tools.javac.util.Pair;
-
 /**
  * Handles the SIP stuff
  * - establishing new session
