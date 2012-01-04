@@ -28,6 +28,7 @@ public class IGMPListener extends IGMPComponent{
 	 */
 	public void initialize(InetAddress ip, int port, TextClient gui) throws IOException{
 
+		this.gui = gui;
 		// Socket anlegen und Gruppe joinen
 		mSocket = new MulticastSocket(port);
 		mcastAdr = ip;
@@ -58,7 +59,8 @@ public class IGMPListener extends IGMPComponent{
 
 				//Empfangene Daten ausgeben
 				byte[] text = pack.getData();
-				gui.processMessage("MulticastGruppe", text.toString());
+				String msg = new String(text);
+				gui.processMessage("MulticastGruppe", msg.trim());
 			} catch (IOException e) {
 
 				LOGGER.error("Fehler beim Lesen aus dem MulticastSocket: "+e);
