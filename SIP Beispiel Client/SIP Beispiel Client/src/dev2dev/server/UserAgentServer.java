@@ -21,11 +21,9 @@ import javax.sip.message.Response;
 
 import org.apache.log4j.Logger;
 
-import dev2dev.igmp.IGMPListener;
 import dev2dev.igmp.IGMPSender;
 import dev2dev.sip.MessageProcessor;
 import dev2dev.sip.SipLayer;
-import dev2dev.textclient.TextClient;
 
 public class UserAgentServer implements MessageProcessor {
 	private static final Logger LOGGER = Logger.getLogger("UserAgentServer");	
@@ -42,7 +40,7 @@ public class UserAgentServer implements MessageProcessor {
 	public static void main(String[] args) {
 
 		try {
-			String username = "ToPa";
+			String username = "ToPa-Server";
 			int port = 4321;
 			String localHost = InetAddress.getLocalHost().getHostName();
 			String ip = InetAddress.getByName(localHost).getHostAddress();
@@ -52,7 +50,7 @@ public class UserAgentServer implements MessageProcessor {
 			UserAgentServer uas = new UserAgentServer(sipLayer);
 			sipLayer.addMessageProcessor(uas);
 
-			System.out.println("Server -"+username+"- hšrt auf Port: "+port);
+			System.out.println("Server -"+username+"- hï¿½rt auf Port: "+port);
 		} catch (Throwable e) {
 			System.out.println("Problem initializing the SIP stack.");
 			e.printStackTrace();
@@ -62,8 +60,7 @@ public class UserAgentServer implements MessageProcessor {
 	
 	public UserAgentServer(SipLayer sipLayer) {
 		this.sipLayer = sipLayer;
-		igmpsender = new IGMPSender();		
-		sipLayer.addMessageProcessor(this);
+		igmpsender = new IGMPSender();
 		activeDialogs = new HashSet<String>();
 		try {
 			igmpsender.initialize(InetAddress.getByName("239.238.237.17"), 9017, this);
@@ -229,15 +226,7 @@ public class UserAgentServer implements MessageProcessor {
 		}		
 		else {
 			try {
-				// send trying, ringing and ok
-				Response trying = sipLayer.createResponse(Response.TRYING, requestEvent.getRequest());
-				trying.addHeader(contactHeader);
-				serverTransaction.sendResponse(trying);
-				LOGGER.debug("Sent Trying: " + trying.toString());
-				Response ringing = sipLayer.createResponse(Response.RINGING, requestEvent.getRequest());
-				ringing.addHeader(contactHeader);
-				serverTransaction.sendResponse(ringing);
-				LOGGER.debug("Sent Ringing: " + ringing.toString());
+				// send ok				
 				Response ok = sipLayer.createResponse(Response.OK, requestEvent.getRequest());
 				ok.addHeader(contactHeader);
 				serverTransaction.sendResponse(ok);
