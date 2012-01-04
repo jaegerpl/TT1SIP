@@ -41,10 +41,7 @@ import javax.sip.message.MessageFactory;
 import javax.sip.message.Request;
 import javax.sip.message.Response;
 
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.apache.log4j.SimpleLayout;
 
 public class SipLayer implements SipListener {
 	private static final Logger LOGGER = Logger.getLogger("SIPLayer");
@@ -88,8 +85,6 @@ public class SipLayer implements SipListener {
 	 */
 	public SipLayer(String username, String ip, int port) throws InvalidArgumentException, TooManyListenersException,
 			ParseException, SipException {
-		LOGGER.addAppender(new ConsoleAppender(new SimpleLayout()));
-		LOGGER.setLevel(Level.ALL);
 		this.username = username;
 		sipFactory = SipFactory.getInstance();
 		sipFactory.setPathName("gov.nist");

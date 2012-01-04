@@ -41,7 +41,7 @@ public class UserAgentServer implements MessageProcessor {
 
 		try {
 			String username = "ToPa-Server";
-			int port = 4321;
+			int port = 5070;
 			String localHost = InetAddress.getLocalHost().getHostName();
 			String ip = InetAddress.getByName(localHost).getHostAddress();
 
@@ -58,8 +58,8 @@ public class UserAgentServer implements MessageProcessor {
 		}
 	}
 	
-	public UserAgentServer(SipLayer sipLayer) {
-		this.sipLayer = sipLayer;
+	public UserAgentServer(SipLayer sipLay) {
+		this.sipLayer = sipLay;
 		igmpsender = new IGMPSender();
 		activeDialogs = new HashSet<String>();
 		try {

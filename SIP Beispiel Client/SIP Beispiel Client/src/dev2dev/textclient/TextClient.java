@@ -106,8 +106,6 @@ public class TextClient extends JFrame implements MessageProcessor, TableModelLi
 	public TextClient(SipLayer sip) {
 		super();
 		log = Logger.getLogger(TextClient.class);
-//		log.addAppender(new ConsoleAppender(new SimpleLayout()));
-//		log.setLevel(Level.ALL);
 		sipLayer = sip;
 		initWindow();
 		String from = "sip:" + sip.getUsername() + "@" + sip.getHost() + ":"
