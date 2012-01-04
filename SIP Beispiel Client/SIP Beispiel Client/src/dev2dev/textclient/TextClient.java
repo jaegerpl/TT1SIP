@@ -9,13 +9,11 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.text.ParseException;
 
-import javax.sip.ClientTransaction;
 import javax.sip.Dialog;
 import javax.sip.DialogTerminatedEvent;
 import javax.sip.InvalidArgumentException;
 import javax.sip.RequestEvent;
 import javax.sip.ResponseEvent;
-import javax.sip.ServerTransaction;
 import javax.sip.SipException;
 import javax.sip.header.CSeqHeader;
 import javax.sip.message.Request;

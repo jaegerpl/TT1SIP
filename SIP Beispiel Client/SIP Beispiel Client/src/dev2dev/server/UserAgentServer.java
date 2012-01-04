@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.text.ParseException;
+import java.util.HashSet;
 import java.util.Set;
 
 import javax.sip.DialogTerminatedEvent;
@@ -41,7 +42,7 @@ public class UserAgentServer implements MessageProcessor {
 	public static void main(String[] args) {
 
 		try {
-			String username = "Torben-Pascal-Server";
+			String username = "ToPa";
 			int port = 4321;
 			String localHost = InetAddress.getLocalHost().getHostName();
 			String ip = InetAddress.getByName(localHost).getHostAddress();
@@ -63,6 +64,7 @@ public class UserAgentServer implements MessageProcessor {
 		this.sipLayer = sipLayer;
 		igmpsender = new IGMPSender();		
 		sipLayer.addMessageProcessor(this);
+		activeDialogs = new HashSet<String>();
 		try {
 			igmpsender.initialize(InetAddress.getByName("239.238.237.17"), 9017, this);
 			Thread t = new Thread(igmpsender);
