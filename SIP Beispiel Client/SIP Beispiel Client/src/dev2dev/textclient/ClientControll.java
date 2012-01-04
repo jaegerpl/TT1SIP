@@ -36,6 +36,7 @@ public class ClientControll extends AbstractTableModel{
 	
 	public ClientControll(TextClient client){
 		this.client = client;
+		this.addTableModelListener(client);
 	}
 	
 	/**
@@ -70,7 +71,7 @@ public class ClientControll extends AbstractTableModel{
 				
 				// add to serverTable for GUI
 				serverTable.add(address);
-				fireTableChanged(null);
+//				fireTableChanged(null);
 				
 				knownServerNowConnected = true;
 				

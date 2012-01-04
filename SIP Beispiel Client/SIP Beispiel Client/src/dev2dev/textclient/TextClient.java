@@ -31,10 +31,7 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.apache.log4j.SimpleLayout;
 
 import dev2dev.igmp.IGMPListener;
 import dev2dev.sip.MessageProcessor;
@@ -60,7 +57,7 @@ public class TextClient extends JFrame implements MessageProcessor, TableModelLi
 	private JButton joinIGMPButton;
 	private JTextField toAddress;
 	private JLabel toLbl;
-	private JTable serverTable = new JTable(dataModel);
+	private JTable serverTable;
 
 	// SIP STUFF
 	private Dialog serverDialog; // the dialog received when sending INVITE to a
@@ -109,14 +106,15 @@ public class TextClient extends JFrame implements MessageProcessor, TableModelLi
 	public TextClient(SipLayer sip) {
 		super();
 		log = Logger.getLogger(TextClient.class);
-		log.addAppender(new ConsoleAppender(new SimpleLayout()));
-		log.setLevel(Level.ALL);
+//		log.addAppender(new ConsoleAppender(new SimpleLayout()));
+//		log.setLevel(Level.ALL);
 		sipLayer = sip;
 		initWindow();
 		String from = "sip:" + sip.getUsername() + "@" + sip.getHost() + ":"
 				+ sip.getPort();
 		this.fromAddress.setText(from);
 		dataModel = new ClientControll(this);
+		serverTable = new JTable(dataModel);
 		serverTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		serverTable.getModel().addTableModelListener(this);
 		serverTable.getSelectionModel().addListSelectionListener(new RowListener());
@@ -391,5 +389,7 @@ public class TextClient extends JFrame implements MessageProcessor, TableModelLi
 	@Override
 	public void tableChanged(TableModelEvent e) {
 		serverTable.repaint();
+		getContentPane().repaint();
+		System.out.println("Neu zeichnen");
 	}
 }
