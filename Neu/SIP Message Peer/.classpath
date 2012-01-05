@@ -12,5 +12,6 @@
 			<attribute name="javadoc_location" value="jar:platform:/resource/SIP Message Peer/lib/sip-javadoc.zip!/javadoc"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="lib/log4j-1.2.8.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
