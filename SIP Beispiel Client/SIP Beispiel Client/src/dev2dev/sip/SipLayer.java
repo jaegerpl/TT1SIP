@@ -89,7 +89,7 @@ public class SipLayer implements SipListener {
 		sipFactory = SipFactory.getInstance();
 		sipFactory.setPathName("gov.nist");
 		Properties properties = new Properties();
-		properties.setProperty("javax.sip.STACK_NAME", "TextClient");
+		properties.setProperty("javax.sip.STACK_NAME", "UAS");
 		properties.setProperty("javax.sip.IP_ADDRESS", ip);
 
 		// DEBUGGING: Information will go to files
