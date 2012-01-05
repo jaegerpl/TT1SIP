@@ -25,8 +25,8 @@ import dev2dev.igmp.IGMPSender;
 import dev2dev.sip.MessageProcessor;
 import dev2dev.sip.SipLayer;
 
-public class UserAgentServer implements MessageProcessor,IUAS {
-	private static final Logger LOGGER = Logger.getLogger(UserAgentServer.class);	
+public class UASPascal implements MessageProcessor, IUAS {
+	private static final Logger LOGGER = Logger.getLogger(UASPascal.class);	
 	private static String PROXY_ADDRESS = "tiserver03.cpt.haw-hamburg.de";
 	
 	private SipLayer sipLayer;
@@ -47,7 +47,7 @@ public class UserAgentServer implements MessageProcessor,IUAS {
 
 			// Starting UAS
 			SipLayer sipLayer = new SipLayer(username, ip, port);
-			UserAgentServer uas = new UserAgentServer(sipLayer);
+			UASPascal uas = new UASPascal(sipLayer);
 			sipLayer.addMessageProcessor(uas);
 
 			System.out.println("Server -"+username+"- h�rt auf Port: "+port);
@@ -58,7 +58,7 @@ public class UserAgentServer implements MessageProcessor,IUAS {
 		}
 	}
 	
-	public UserAgentServer(SipLayer sipLay) {
+	public UASPascal(SipLayer sipLay) {
 		this.sipLayer = sipLay;
 		igmpsender = new IGMPSender();
 		activeDialogs = new HashSet<String>();

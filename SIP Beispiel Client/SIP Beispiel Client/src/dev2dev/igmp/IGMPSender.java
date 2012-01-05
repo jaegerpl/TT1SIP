@@ -7,6 +7,7 @@ import java.net.MulticastSocket;
 
 import org.apache.log4j.Logger;
 
+import dev2dev.server.IUAS;
 import dev2dev.server.UserAgentServer;
 
 public class IGMPSender extends IGMPComponent {
@@ -16,7 +17,7 @@ public class IGMPSender extends IGMPComponent {
 	// Loggerinstanz
 	private static final Logger LOGGER = Logger.getLogger(TAG);
 	// private static final byte TTL = 1;
-	private UserAgentServer userAgentServer;
+	private IUAS userAgentServer;
 
 	public IGMPSender() {
 
@@ -36,7 +37,7 @@ public class IGMPSender extends IGMPComponent {
 	 * @throws IOException
 	 *             Fehler beim erzeugen des IPAdressen-Objekts oder Port
 	 */
-	public void initialize(InetAddress ip, int port, UserAgentServer uas) throws IOException {
+	public void initialize(InetAddress ip, int port, IUAS uas) throws IOException {
 		this.userAgentServer = uas;
 
 		// Socket anlegen
