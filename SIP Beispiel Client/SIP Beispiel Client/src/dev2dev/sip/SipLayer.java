@@ -250,27 +250,32 @@ public class SipLayer implements SipListener {
 	 * @see javax.sip.SipListener#processResponse(javax.sip.ResponseEvent)
 	 */
 	public void processResponse(ResponseEvent evt) {
-		LOGGER.debug("processResponse(" + evt.toString() + " )");
+		LOGGER.info("processResponse(" + evt.getDialog().getRemoteParty() + " )");
 		Response response = evt.getResponse();
 		int status = response.getStatusCode();
 
 		// Handlen der verschiedenen Responses
 		if (status == Response.TRYING) {
+			LOGGER.info("processResponse(TRYING");
 			for (MessageProcessor messageProcessor : messageProcessors)
 				messageProcessor.processTrying();
 		}
 		if (status >= Response.OK && status <= 300) {
+			LOGGER.info("processResponse(OK <= 300");
 			for (MessageProcessor messageProcessor : messageProcessors)
 				messageProcessor.processInfo("--Sent");
 		} else {
+			LOGGER.info("processResponse(OK > 300");
 			for (MessageProcessor messageProcessor : messageProcessors)
 				messageProcessor.processError("Previous message not sent: " + status);
 		}
 		if (status == Response.OK) {
+			LOGGER.info("processResponse(OK");
 			for (MessageProcessor messageProcessor : messageProcessors)
 				messageProcessor.processOK(evt);
 		}
 		if (status == Response.RINGING) {
+			LOGGER.info("processResponse(RINGING");
 			for (MessageProcessor messageProcessor : messageProcessors)
 				messageProcessor.processRinging();
 		}
@@ -285,13 +290,14 @@ public class SipLayer implements SipListener {
 	 * @see javax.sip.SipListener#processRequest(javax.sip.RequestEvent)
 	 */
 	public void processRequest(RequestEvent evt) {
-		LOGGER.debug("processRequest(" + evt.toString() + " )");
+		LOGGER.info("processRequest(" + evt.toString() + " )");
 		Request req = evt.getRequest();
 
 		String method = req.getMethod();
 
 		// Handlen der verschiedenen Requests
 		if (method.equals("MESSAGE")) {
+			LOGGER.info("processRequest(MESSAGE)");
 			FromHeader from = (FromHeader) req.getHeader("From");
 			for (MessageProcessor messageProcessor : messageProcessors)
 				messageProcessor.processMessage(from.getAddress().toString(), new String(req.getRawContent()));
@@ -308,12 +314,15 @@ public class SipLayer implements SipListener {
 					messageProcessor.processError("Can't send OK reply.");
 			}
 		} else if (method.equals(Request.ACK)) {
+			LOGGER.info("processRequest(ACK)");
 			for (MessageProcessor messageProcessor : messageProcessors)
 				messageProcessor.processAck(evt);
 		} else if (method.equals(Request.INVITE)) {
+			LOGGER.info("processRequest(INVITE)");
 			for (MessageProcessor messageProcessor : messageProcessors)
 				messageProcessor.processInvite(evt);
 		} else if (method.equals(Request.BYE)) {
+			LOGGER.info("processRequest(BYE)");
 			for (MessageProcessor messageProcessor : messageProcessors)
 				messageProcessor.processBye(evt);
 		}
@@ -386,30 +395,41 @@ public class SipLayer implements SipListener {
 	public String register(String proxyAddress) throws ParseException, InvalidArgumentException,
 			SipException {
 		// Create Register request with proxy as target
-		SipURI from = addressFactory.createSipURI(getUsername(), getHost() + ":" + getPort());
-		Address fromNameAddress = addressFactory.createAddress(from);
-		fromNameAddress.setDisplayName(getUsername());
-		FromHeader fromHeader = headerFactory.createFromHeader(fromNameAddress, null);
-		ToHeader toHeader = headerFactory.createToHeader(fromNameAddress, null);
-		SipURI requestURI = addressFactory.createSipURI(toUsername, proxyAddress);
-		requestURI.setTransportParam("udp");
-		ArrayList<ViaHeader> viaHeaders = new ArrayList<ViaHeader>();
-		ViaHeader viaHeader = headerFactory.createViaHeader(getHost(), getPort(), "udp", null);
-		viaHeaders.add(viaHeader);
-		CallIdHeader callIdHeader = sipProvider.getNewCallId();
-		long sequenceNumber = 1;
-		CSeqHeader cSeqHeader = headerFactory.createCSeqHeader(sequenceNumber, Request.REGISTER);
-		MaxForwardsHeader maxForwards = headerFactory.createMaxForwardsHeader(70);
-		Request request = messageFactory.createRequest(requestURI, Request.REGISTER, callIdHeader, cSeqHeader,
-				fromHeader, toHeader, viaHeaders, maxForwards);
-		SipURI contactURI = addressFactory.createSipURI(getUsername(), getHost());
-		contactURI.setPort(getPort());
-		Address contactAddress = addressFactory.createAddress(contactURI);
-		contactAddress.setDisplayName(getUsername());
-		ContactHeader contactHeader = headerFactory.createContactHeader(contactAddress);
-		request.addHeader(contactHeader);
-		// Send Register request to proxy
-		sipProvider.sendRequest(request);
+//		SipURI from = addressFactory.createSipURI(getUsername(), getHost() + ":" + getPort());
+//		Address fromNameAddress = addressFactory.createAddress(from);
+//		fromNameAddress.setDisplayName(getUsername());
+//		FromHeader fromHeader = headerFactory.createFromHeader(fromNameAddress, null);
+//		ToHeader toHeader = headerFactory.createToHeader(fromNameAddress, null);
+//		SipURI requestURI = addressFactory.createSipURI(toUsername, proxyAddress);
+//		requestURI.setTransportParam("udp");
+//		ArrayList<ViaHeader> viaHeaders = new ArrayList<ViaHeader>();
+//		ViaHeader viaHeader = headerFactory.createViaHeader(getHost(), getPort(), "udp", null);
+//		viaHeaders.add(viaHeader);
+//		CallIdHeader callIdHeader = sipProvider.getNewCallId();
+//		long sequenceNumber = 1;
+//		CSeqHeader cSeqHeader = headerFactory.createCSeqHeader(sequenceNumber, Request.REGISTER);
+//		MaxForwardsHeader maxForwards = headerFactory.createMaxForwardsHeader(70);
+//		Request request = messageFactory.createRequest(requestURI, Request.REGISTER, callIdHeader, cSeqHeader,
+//				fromHeader, toHeader, viaHeaders, maxForwards);
+//		SipURI contactURI = addressFactory.createSipURI(getUsername(), getHost());
+//		contactURI.setPort(getPort());
+//		Address contactAddress = addressFactory.createAddress(contactURI);
+//		contactAddress.setDisplayName(getUsername());
+//		ContactHeader contactHeader = headerFactory.createContactHeader(contactAddress);
+//		request.addHeader(contactHeader);
+//		// Send Register request to proxy
+//		sipProvider.sendRequest(request);
+		
+		Request invite = messageFactory.createRequest("REGISTER " + proxyAddress + " SIP/2.0\n");
+		setupHeaders(invite, Request.REGISTER, proxyAddress);
+
+		// Start Transaction
+		ClientTransaction trans;
+
+		trans = sipProvider.getNewClientTransaction(invite);
+		Dialog dia = trans.getDialog();
+		trans.sendRequest();
+		
 		return callIdHeader.getCallId();
 	}
 
