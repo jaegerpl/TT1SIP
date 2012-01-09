@@ -23,7 +23,7 @@ public class IGMPSender extends IGMPComponent {
 
 		super();
 
-		buf = "IGMPSender Pascal und Torben".getBytes();
+		buf = "ToPa-Server lebt!".getBytes();
 		pack = new DatagramPacket(buf, buf.length);
 	}
 

@@ -62,6 +62,7 @@ public class UASPascal implements MessageProcessor, IUAS {
 		this.sipLayer = sipLay;
 		igmpsender = new IGMPSender();
 		activeDialogs = new HashSet<String>();
+		inactiveDialogs = new HashSet<String>();
 		try {
 			igmpsender.initialize(InetAddress.getByName("239.238.237.17"), 9017, this);
 			Thread t = new Thread(igmpsender);
@@ -111,12 +112,11 @@ public class UASPascal implements MessageProcessor, IUAS {
 		String dialogId = requestEvent.getDialog().getDialogId();
 		// sender is known and waiting to establish a dialog
 		if (inactiveDialogs.contains(dialogId)) {
-			LOGGER.debug(dialogId + " is now active!");
+			LOGGER.info("now active: "+dialogId);
 			activeDialogs.add(dialogId);
 			inactiveDialogs.remove(dialogId);
-		}
-		// sender is unknown
-		else {
+		} else {
+			// sender is unknown
 			try {
 				LOGGER.info(dialogId + " is unknown!");
 				Response response = sipLayer.createResponse(Response.DECLINE, requestEvent.getRequest());
