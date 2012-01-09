@@ -217,12 +217,12 @@ public class TextClient extends JFrame implements MessageProcessor, TableModelLi
 		Dialog dialog;
 		String server = toAddress.getText();
 		if(server.equals("")){
-			LOGGER.debug("Kein Server ausgewählt zum disconnecten");
+			LOGGER.info("Kein Server ausgewählt zum disconnecten");
 		}
 		else {
 			dialog = dataModel.getServerDialog(server);			
 			sipLayer.hangUp(dialog);			
-			LOGGER.debug("Sending BYE to server:"+dialog.getDialogId());
+			LOGGER.info("Sending BYE to server:"+dialog.getDialogId());
 		}
 	}
 
@@ -297,15 +297,15 @@ public class TextClient extends JFrame implements MessageProcessor, TableModelLi
 	}
 
 	public void processAck(RequestEvent requestEvent) {
-		LOGGER.debug("processAck()");
+		LOGGER.info("processAck()");
 	}
 
 	public void processBye(RequestEvent requestEvent) {
-		LOGGER.debug("processBye()");
+		LOGGER.info("processBye()");
 	}
 
 	public void processDialogTerminated(DialogTerminatedEvent dte) {
-		LOGGER.debug("processDialogTerminated()");
+		LOGGER.info("processDialogTerminated()");
 	}
 
 	public void processError(String errorMessage) {
@@ -317,7 +317,7 @@ public class TextClient extends JFrame implements MessageProcessor, TableModelLi
 	}
 
 	public void processInvite(RequestEvent requestEvent) {
-		LOGGER.debug("processInvite()");
+		LOGGER.info("processInvite()");
 	}
 
 	public void processOK(ResponseEvent responseEvent) {
@@ -336,16 +336,15 @@ public class TextClient extends JFrame implements MessageProcessor, TableModelLi
 		// OK     <-
 		if (cseq.getMethod().equals(Request.INVITE)) {
 			Request ackRequest;
-			LOGGER.debug("Receiving OK after INVITE");			
+			LOGGER.info("Receiving OK after INVITE");			
 			try {
 				ackRequest = dia.createRequest(Request.ACK);
 				dia.sendAck(ackRequest);
+				LOGGER.info("processOK() - sending ACK");
 			} catch (SipException e) {			
 				e.printStackTrace();
 			} 	
-			
-			dataModel.markServerAsConnected(dia);
-			LOGGER.debug("processOK() after INVITE");
+			dataModel.markServerAsConnected(dia);			
 		}		
 		
 		// 2 
@@ -353,20 +352,20 @@ public class TextClient extends JFrame implements MessageProcessor, TableModelLi
 		// OK  <-
 		if (cseq.getMethod().equals(Request.BYE)) {
 			dataModel.disconnectServer(dia);		
-			LOGGER.debug("Receiving OK after BYE from server"+ dia);		
+			LOGGER.info("Receiving OK after BYE from server"+ dia);		
 					
 			dataModel.removeServer(dia);
 			toAddress.setText("");
-			LOGGER.debug("processOK() after BYE");
+			LOGGER.info("processOK() after BYE");
 		}
 	}
 
 	public void processRinging() {
-		LOGGER.debug("processRinging()");
+		LOGGER.info("processRinging()");
 	}
 
 	public void processTrying() {
-		LOGGER.debug("processTrying()");
+		LOGGER.info("processTrying()");
 	}
     
     private class RowListener implements ListSelectionListener {
