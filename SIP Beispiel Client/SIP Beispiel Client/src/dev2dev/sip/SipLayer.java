@@ -395,40 +395,40 @@ public class SipLayer implements SipListener {
 	public String register(String proxyAddress) throws ParseException, InvalidArgumentException,
 			SipException {
 		// Create Register request with proxy as target
-//		SipURI from = addressFactory.createSipURI(getUsername(), getHost() + ":" + getPort());
-//		Address fromNameAddress = addressFactory.createAddress(from);
-//		fromNameAddress.setDisplayName(getUsername());
-//		FromHeader fromHeader = headerFactory.createFromHeader(fromNameAddress, null);
-//		ToHeader toHeader = headerFactory.createToHeader(fromNameAddress, null);
-//		SipURI requestURI = addressFactory.createSipURI(toUsername, proxyAddress);
-//		requestURI.setTransportParam("udp");
-//		ArrayList<ViaHeader> viaHeaders = new ArrayList<ViaHeader>();
-//		ViaHeader viaHeader = headerFactory.createViaHeader(getHost(), getPort(), "udp", null);
-//		viaHeaders.add(viaHeader);
-//		CallIdHeader callIdHeader = sipProvider.getNewCallId();
-//		long sequenceNumber = 1;
-//		CSeqHeader cSeqHeader = headerFactory.createCSeqHeader(sequenceNumber, Request.REGISTER);
-//		MaxForwardsHeader maxForwards = headerFactory.createMaxForwardsHeader(70);
-//		Request request = messageFactory.createRequest(requestURI, Request.REGISTER, callIdHeader, cSeqHeader,
-//				fromHeader, toHeader, viaHeaders, maxForwards);
-//		SipURI contactURI = addressFactory.createSipURI(getUsername(), getHost());
-//		contactURI.setPort(getPort());
-//		Address contactAddress = addressFactory.createAddress(contactURI);
-//		contactAddress.setDisplayName(getUsername());
-//		ContactHeader contactHeader = headerFactory.createContactHeader(contactAddress);
-//		request.addHeader(contactHeader);
-//		// Send Register request to proxy
-//		sipProvider.sendRequest(request);
+		SipURI from = addressFactory.createSipURI(getUsername(), getHost() + ":" + getPort());
+		Address fromNameAddress = addressFactory.createAddress(from);
+		fromNameAddress.setDisplayName(getUsername());
+		FromHeader fromHeader = headerFactory.createFromHeader(fromNameAddress, null);
+		ToHeader toHeader = headerFactory.createToHeader(fromNameAddress, null);
+		SipURI requestURI = addressFactory.createSipURI(toUsername, proxyAddress);
+		requestURI.setTransportParam("udp");
+		ArrayList<ViaHeader> viaHeaders = new ArrayList<ViaHeader>();
+		ViaHeader viaHeader = headerFactory.createViaHeader(getHost(), getPort(), "udp", null);
+		viaHeaders.add(viaHeader);
+		CallIdHeader callIdHeader = sipProvider.getNewCallId();
+		long sequenceNumber = 1;
+		CSeqHeader cSeqHeader = headerFactory.createCSeqHeader(sequenceNumber, Request.REGISTER);
+		MaxForwardsHeader maxForwards = headerFactory.createMaxForwardsHeader(70);
+		Request request = messageFactory.createRequest(requestURI, Request.REGISTER, callIdHeader, cSeqHeader,
+				fromHeader, toHeader, viaHeaders, maxForwards);
+		SipURI contactURI = addressFactory.createSipURI(getUsername(), getHost());
+		contactURI.setPort(getPort());
+		Address contactAddress = addressFactory.createAddress(contactURI);
+		contactAddress.setDisplayName(getUsername());
+		ContactHeader contactHeader = headerFactory.createContactHeader(contactAddress);
+		request.addHeader(contactHeader);
+		// Send Register request to proxy
+		sipProvider.sendRequest(request);
 		
-		Request invite = messageFactory.createRequest("REGISTER " + proxyAddress + " SIP/2.0\n");
-		setupHeaders(invite, Request.REGISTER, proxyAddress);
-
-		// Start Transaction
-		ClientTransaction trans;
-
-		trans = sipProvider.getNewClientTransaction(invite);
-		Dialog dia = trans.getDialog();
-		trans.sendRequest();
+//		Request invite = messageFactory.createRequest("REGISTER " + proxyAddress + " SIP/2.0\n");
+//		setupHeaders(invite, Request.REGISTER, proxyAddress);
+//
+//		// Start Transaction
+//		ClientTransaction trans;
+//
+//		trans = sipProvider.getNewClientTransaction(invite);
+//		Dialog dia = trans.getDialog();
+//		trans.sendRequest();
 		
 		return callIdHeader.getCallId();
 	}
