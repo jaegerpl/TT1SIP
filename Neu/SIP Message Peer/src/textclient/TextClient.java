@@ -56,6 +56,7 @@ public class TextClient extends JFrame implements MessageProcessor, TableModelLi
 	private JButton joinIGMPButton;
 	private JTextField toAddress;
 	private JLabel toLbl;
+	private JScrollPane scrollpane;
 	private JTable serverTable;
 
 	// SIP STUFF
@@ -105,15 +106,13 @@ public class TextClient extends JFrame implements MessageProcessor, TableModelLi
 	public TextClient(SipLayer sip) {
 		super();
 		sipLayer = sip;
+		dataModel = new ClientControll(this);
+		dataModel.setValueAt("hurz", 0, 0);
 		initWindow();
 		String from = "sip:" + sip.getUsername() + "@" + sip.getHost() + ":"
 				+ sip.getPort();
 		this.fromAddress.setText(from);
-		dataModel = new ClientControll(this);
-		serverTable = new JTable(dataModel);
-		serverTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		serverTable.getModel().addTableModelListener(this);
-		serverTable.getSelectionModel().addListSelectionListener(new RowListener());
+		
 	}
 
 	private void initWindow() {
@@ -127,7 +126,8 @@ public class TextClient extends JFrame implements MessageProcessor, TableModelLi
 		connectServerButton = new JButton();
 		disconnectServerButton = new JButton();
 		joinIGMPButton = new JButton();
-		JScrollPane scrollpane = new JScrollPane(serverTable);
+		serverTable = new JTable(dataModel);
+		scrollpane = new JScrollPane();
 
 		getContentPane().setLayout(null);
 
@@ -170,6 +170,8 @@ public class TextClient extends JFrame implements MessageProcessor, TableModelLi
 		getContentPane().add(toAddress);
 		toAddress.setBounds(40, 175, 235, 21);
 		
+		scrollpane.setViewportView(serverTable);
+		scrollpane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		getContentPane().add(scrollpane);
 		scrollpane.setBounds(5, 200, 270, 200);
 

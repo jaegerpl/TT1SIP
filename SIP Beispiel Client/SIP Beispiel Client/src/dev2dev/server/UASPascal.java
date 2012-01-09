@@ -7,6 +7,7 @@ import java.text.ParseException;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.sip.Dialog;
 import javax.sip.DialogTerminatedEvent;
 import javax.sip.InvalidArgumentException;
 import javax.sip.RequestEvent;
@@ -109,10 +110,11 @@ public class UASPascal implements MessageProcessor, IUAS {
 		// <- 200 OK
 		// ACK ->
 		LOGGER.info("processAck()");
-		String dialogId = requestEvent.getDialog().getDialogId();
+		Dialog dialog = requestEvent.getDialog();
+		String dialogId = dialog.getDialogId();
 		// sender is known and waiting to establish a dialog
 		if (inactiveDialogs.contains(dialogId)) {
-			LOGGER.info("now active: "+dialogId);
+			LOGGER.info("now active: "+dialog.getRemoteParty());
 			activeDialogs.add(dialogId);
 			inactiveDialogs.remove(dialogId);
 		} else {

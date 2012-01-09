@@ -19,26 +19,26 @@ import javax.swing.table.AbstractTableModel;
  *
  */
 public class ClientControll extends AbstractTableModel{
-	
+
 	// servers that have been send an INVITE
 	private ArrayList<Pair> knownServers = new ArrayList<Pair>();
-	
+
 	// servers that are successfully connected to the client (INVITE, OK and ACK are transmitted)
 	private ArrayList<Pair> connectedServers = new ArrayList<Pair>();
-	
+
 	// servers that have been sent an BYE, but did not reply with an OK
 	private ArrayList<Pair> disconnectingServers = new ArrayList<Pair>();
-	
+
 	// list of connected servers for the GUI
 	private ArrayList<String> serverTable = new ArrayList<String>();
-	
+
 	private TextClient client;
-	
+
 	public ClientControll(TextClient client){
 		this.client = client;
 		this.addTableModelListener(client);
 	}
-	
+
 	/**
 	 * Adds a server to the list of knownServers.
 	 * 
@@ -48,7 +48,7 @@ public class ClientControll extends AbstractTableModel{
 	public void addServer(Dialog dia, String address){
 		knownServers.add(new Pair(dia, address));
 	}
-	
+
 	/**
 	 * Moves the server from the list of knownServers to the connectedServers List
 	 * and also adds it to the serverTable to display in the gui.
@@ -60,30 +60,30 @@ public class ClientControll extends AbstractTableModel{
 		String diaID = dia.getDialogId();
 		String address;
 		boolean knownServerNowConnected = false;
-		
+
 		for(Pair p : knownServers){
 			if(diaID.equals(p.getKey().getDialogId())){
 				address = p.getValue();
 				knownServers.remove(p.getKey());
-				
+
 				// add to connectedServers list
 				connectedServers.add(new Pair(dia, address));
-				
+
 				// add to serverTable for GUI
 				serverTable.add(address);
 //				fireTableChanged(null);
-				
+
 				knownServerNowConnected = true;
-				
+
 				break;
 			}
 		}
-		
+
 		if(knownServerNowConnected == false){
 			//TODO send DECLINE
 		}
 	}
-	
+
 	/**
 	 * Remove server from all lists and in the GUI
 	 * 
@@ -92,22 +92,22 @@ public class ClientControll extends AbstractTableModel{
 	public void removeServer(Dialog dia){
 		String diaID = dia.getDialogId();
 		String address;
-		
+
 		for(Pair p : connectedServers){
 			if(diaID.equals(p.getKey().getDialogId())){
 				address = p.getValue();
 				knownServers.remove(p.getKey());
-				
+
 				serverTable.remove(serverTable.indexOf(address));
 				fireTableChanged(null);
 			}
 		}
 	}
-	
+
 	public void disconnectServer(Dialog dia) {
-		
+
 	}
-	
+
 	/**
 	 * Returns the dialog to the given address string or null if nothing could be found.
 	 * 
@@ -122,7 +122,7 @@ public class ClientControll extends AbstractTableModel{
 		}
 		return null;
 	}
-	
+
 	@Override
 	public int getColumnCount() {
 		return serverTable.size();
@@ -138,6 +138,14 @@ public class ClientControll extends AbstractTableModel{
 		return serverTable.get(row);
 	}
 	
+	public void setValueAt(Object value, int row, int column) {
+		serverTable.add(row, (String) value);
+	}
+	
+	public String getColumnName(int i) {
+		return "Servers";
+	}
+
 	class Pair implements Entry<Dialog, String> {
 
     	private String adress;
@@ -163,7 +171,7 @@ public class ClientControll extends AbstractTableModel{
 			this.adress = server;
 			return oldserver;
 		}
-		
+
 		public String toString(){
 			return adress;
 		}
