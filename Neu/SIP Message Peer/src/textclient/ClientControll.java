@@ -36,7 +36,7 @@ public class ClientControll extends AbstractTableModel{
 
 	public ClientControll(TextClient client){
 		this.client = client;
-		this.addTableModelListener(client);
+//		this.addTableModelListener(client);
 	}
 
 	/**
@@ -71,7 +71,7 @@ public class ClientControll extends AbstractTableModel{
 
 				// add to serverTable for GUI
 				serverTable.add(address);
-//				fireTableChanged(null);
+				fireTableChanged(null);
 
 				knownServerNowConnected = true;
 
@@ -125,12 +125,12 @@ public class ClientControll extends AbstractTableModel{
 
 	@Override
 	public int getColumnCount() {
-		return serverTable.size();
+		return 1;
 	}
 
 	@Override
 	public int getRowCount() {
-		return 1;
+		return serverTable.size();
 	}
 
 	@Override

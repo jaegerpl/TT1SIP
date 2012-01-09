@@ -10,6 +10,8 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.text.ParseException;
+import java.util.ArrayList;
+
 import org.apache.log4j.Logger;
 
 import javax.sip.Dialog;
@@ -36,8 +38,10 @@ import javax.swing.event.TableModelListener;
 
 import sip.MessageProcessor;
 import sip.SipLayer;
+import textclient.ClientControll.Pair;
 
-public class TextClient extends JFrame implements MessageProcessor, TableModelListener {
+//public class TextClient extends JFrame implements MessageProcessor, TableModelListener {
+public class TextClient extends JFrame implements MessageProcessor {
 
 	private static final Logger LOGGER = Logger.getLogger(TextClient.class);
 
@@ -56,12 +60,11 @@ public class TextClient extends JFrame implements MessageProcessor, TableModelLi
 	private JButton joinIGMPButton;
 	private JTextField toAddress;
 	private JLabel toLbl;
-	private JScrollPane scrollpane;
-	private JTable serverTable;
+//	private JScrollPane scrollpane;
+//	private JTable serverTable;
 
 	// SIP STUFF
-	private Dialog serverDialog; // the dialog received when sending INVITE to a
-									// server
+	private Dialog serverDialog; // the dialog received when sending INVITE to a server
 
 	// IGMP STUFF
 	static IGMPListener igmpListener;
@@ -107,7 +110,7 @@ public class TextClient extends JFrame implements MessageProcessor, TableModelLi
 		super();
 		sipLayer = sip;
 		dataModel = new ClientControll(this);
-		dataModel.setValueAt("hurz", 0, 0);
+//		dataModel.setValueAt("hurz", 0, 0);
 		initWindow();
 		String from = "sip:" + sip.getUsername() + "@" + sip.getHost() + ":"
 				+ sip.getPort();
@@ -126,8 +129,8 @@ public class TextClient extends JFrame implements MessageProcessor, TableModelLi
 		connectServerButton = new JButton();
 		disconnectServerButton = new JButton();
 		joinIGMPButton = new JButton();
-		serverTable = new JTable(dataModel);
-		scrollpane = new JScrollPane();
+//		serverTable = new JTable(dataModel);
+//		scrollpane = new JScrollPane();
 
 		getContentPane().setLayout(null);
 
@@ -170,10 +173,10 @@ public class TextClient extends JFrame implements MessageProcessor, TableModelLi
 		getContentPane().add(toAddress);
 		toAddress.setBounds(40, 175, 235, 21);
 		
-		scrollpane.setViewportView(serverTable);
-		scrollpane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-		getContentPane().add(scrollpane);
-		scrollpane.setBounds(5, 200, 270, 200);
+//		scrollpane.setViewportView(serverTable);
+//		scrollpane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+//		getContentPane().add(scrollpane);
+//		scrollpane.setBounds(5, 200, 270, 200);
 
 		connectServerButton.setText("Con2Server");
 		connectServerButton.addActionListener(new ActionListener() {
@@ -190,10 +193,10 @@ public class TextClient extends JFrame implements MessageProcessor, TableModelLi
 		});
 		
 		getContentPane().add(connectServerButton);
-		connectServerButton.setBounds(1, 405, 150, 25);
+		connectServerButton.setBounds(1, 200, 150, 25);
 
 		getContentPane().add(disconnectServerButton);
-		disconnectServerButton.setBounds(1, 435, 150, 25);
+		disconnectServerButton.setBounds(1, 230, 150, 25);
 		
 		joinIGMPButton.setText("JoinGroup");
 		joinIGMPButton.addActionListener(new ActionListener() {
@@ -203,12 +206,12 @@ public class TextClient extends JFrame implements MessageProcessor, TableModelLi
 		});
 
 		getContentPane().add(joinIGMPButton);
-		joinIGMPButton.setBounds(152, 405, 130, 25);
+		joinIGMPButton.setBounds(152, 200, 130, 25);
 
 		java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit()
 				.getScreenSize();
-		setBounds((screenSize.width - 288) / 2, (screenSize.height - 500) / 2,
-				288, 500);
+		setBounds((screenSize.width - 288) / 2, (screenSize.height - 300) / 2,
+				288, 300);
 	}
 
 	/**
@@ -249,7 +252,7 @@ public class TextClient extends JFrame implements MessageProcessor, TableModelLi
 				// if server successfully joined, clean GUI
 				if(serverDialog != null){
 					dataModel.addServer(serverDialog, to);
-					toAddress.setText("");
+//					toAddress.setText("");
 				}
 			} catch (ParseException e) {
 				e.printStackTrace();
@@ -370,23 +373,24 @@ public class TextClient extends JFrame implements MessageProcessor, TableModelLi
 		LOGGER.info("processTrying()");
 	}
     
-    private class RowListener implements ListSelectionListener {
-        public void valueChanged(ListSelectionEvent event) {
-            if (event.getValueIsAdjusting()) {
-                return;
-            }            
-            serverTable.getSelectionModel().getLeadSelectionIndex();
-            serverTable.getColumnModel().getSelectionModel().getLeadSelectionIndex();
-     
-        int[] rows = serverTable.getSelectedRows();
-        toAddress.setText(serverTable.getValueAt(rows[0], 0).toString());
-        }
-    }
 
-	@Override
-	public void tableChanged(TableModelEvent e) {
-		serverTable.repaint();
-		getContentPane().repaint();
-		System.out.println("Neu zeichnen");
-	}
+//    private class RowListener implements ListSelectionListener {
+//        public void valueChanged(ListSelectionEvent event) {
+//            if (event.getValueIsAdjusting()) {
+//                return;
+//            }            
+//            serverTable.getSelectionModel().getLeadSelectionIndex();
+//            serverTable.getColumnModel().getSelectionModel().getLeadSelectionIndex();
+//     
+//        int[] rows = serverTable.getSelectedRows();
+//        toAddress.setText(serverTable.getValueAt(rows[0], 0).toString());
+//        }
+//    }
+//
+//	@Override
+//	public void tableChanged(TableModelEvent e) {
+//		serverTable.repaint();
+//		getContentPane().repaint();
+//		LOGGER.info("Neu zeichnen");
+//	}
 }
