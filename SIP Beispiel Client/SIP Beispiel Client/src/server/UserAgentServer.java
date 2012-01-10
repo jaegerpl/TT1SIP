@@ -1,4 +1,6 @@
-package dev2dev.server;
+package server;
+
+import igmp.IGMPSender;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -7,6 +9,7 @@ import java.text.ParseException;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.sip.Dialog;
 import javax.sip.DialogTerminatedEvent;
 import javax.sip.InvalidArgumentException;
 import javax.sip.RequestEvent;
@@ -21,11 +24,11 @@ import javax.sip.message.Response;
 
 import org.apache.log4j.Logger;
 
-import dev2dev.igmp.IGMPSender;
-import dev2dev.sip.MessageProcessor;
-import dev2dev.sip.SipLayer;
+import sip.MessageProcessor;
+import sip.SipLayer;
 
-public class UserAgentServer implements MessageProcessor,IUAS {
+
+public class UserAgentServer implements MessageProcessor {
 	private static final Logger LOGGER = Logger.getLogger(UserAgentServer.class);	
 	private static String PROXY_ADDRESS = "tiserver03.cpt.haw-hamburg.de";
 	
@@ -34,7 +37,7 @@ public class UserAgentServer implements MessageProcessor,IUAS {
 	private Set<String> activeDialogs;
 	private Set<String> inactiveDialogs;
 	private String callIdProxy;
-	private boolean isRegisteredAtProxy = false;
+	private boolean isRegisteredAtProxy = true;
 	private IGMPSender igmpsender;
 	
 	public static void main(String[] args) {
@@ -50,9 +53,9 @@ public class UserAgentServer implements MessageProcessor,IUAS {
 			UserAgentServer uas = new UserAgentServer(sipLayer);
 			sipLayer.addMessageProcessor(uas);
 
-			System.out.println("Server -"+username+"- h�rt auf Port: "+port);
+			LOGGER.info("Server -"+username+"- hoert auf Port: "+port);
 		} catch (Throwable e) {
-			System.out.println("Problem initializing the SIP stack.");
+			LOGGER.info("Problem initializing the SIP stack.");
 			e.printStackTrace();
 			System.exit(-1);
 		}
@@ -62,12 +65,15 @@ public class UserAgentServer implements MessageProcessor,IUAS {
 		this.sipLayer = sipLay;
 		igmpsender = new IGMPSender();
 		activeDialogs = new HashSet<String>();
+		inactiveDialogs = new HashSet<String>();
 		try {
 			igmpsender.initialize(InetAddress.getByName("239.238.237.17"), 9017, this);
 			Thread t = new Thread(igmpsender);
 			t.start();
+			LOGGER.debug("IGMPSender gestartet");
 			contactHeader = sipLayer.getContactHeader();		
 			callIdProxy = sipLayer.register(PROXY_ADDRESS);
+			LOGGER.info("SipLayer am Proxy registriert");
 		} catch (ParseException e) {
 			e.printStackTrace();
 		} catch (InvalidArgumentException e) {
@@ -105,24 +111,24 @@ public class UserAgentServer implements MessageProcessor,IUAS {
 		// INVITE ->
 		// <- 200 OK
 		// ACK ->
-		LOGGER.debug("processAck()");
-		String dialogId = requestEvent.getDialog().getDialogId();
+		LOGGER.info("processAck()");
+		Dialog dialog = requestEvent.getDialog();
+		String dialogId = dialog.getDialogId();
 		// sender is known and waiting to establish a dialog
 		if (inactiveDialogs.contains(dialogId)) {
-			LOGGER.debug(dialogId + " is now active!");
+			LOGGER.info("now active: "+dialog.getRemoteParty());
 			activeDialogs.add(dialogId);
 			inactiveDialogs.remove(dialogId);
-		}
-		// sender is unknown
-		else {
+		} else {
+			// sender is unknown
 			try {
-				LOGGER.debug(dialogId + " is unknown!");
+				LOGGER.info(dialogId + " is unknown!");
 				Response response = sipLayer.createResponse(Response.DECLINE, requestEvent.getRequest());
 				ServerTransaction serverTransaction = requestEvent.getServerTransaction();
 				if (serverTransaction == null)
 					serverTransaction = sipLayer.getNewServerTransaction(requestEvent.getRequest());
 				serverTransaction.sendResponse(response);
-				LOGGER.debug("Sent Decline: " + response.toString());
+				LOGGER.info("Sent Decline: " + response.toString());
 			} catch (ParseException e) {
 				e.printStackTrace();
 			} catch (SipException e) {
@@ -143,7 +149,7 @@ public class UserAgentServer implements MessageProcessor,IUAS {
 		// Proxy - UAS
 		// BYE ->
 		// <- 200 OK
-		LOGGER.debug("processBye()");
+		LOGGER.info("processBye()");
 		String dialogId = requestEvent.getDialog().getDialogId();
 		// confirms BYE with OK
 		if (activeDialogs.contains(dialogId)) {
@@ -153,7 +159,7 @@ public class UserAgentServer implements MessageProcessor,IUAS {
 				ServerTransaction serverTransaction = requestEvent.getServerTransaction();
 				if (serverTransaction == null) serverTransaction = sipLayer.getNewServerTransaction(requestEvent.getRequest());
 				serverTransaction.sendResponse(response);
-				LOGGER.debug("Sent OK: " + response.toString());
+				LOGGER.info("Sent OK: " + response.toString());
 			} catch (InvalidArgumentException e) {
 				e.printStackTrace();
 			} catch (ParseException e) {
@@ -171,19 +177,19 @@ public class UserAgentServer implements MessageProcessor,IUAS {
 	 */
 	@Override
 	public void processDialogTerminated(DialogTerminatedEvent dialogTerminatedEvent) {
-		LOGGER.debug("processDialogTerminated()");
+		LOGGER.info("processDialogTerminated()");
 		String dialogId = dialogTerminatedEvent.getDialog().getDialogId();
 		activeDialogs.remove(dialogId);
 	}
 
 	@Override
 	public void processError(String error) {
-		LOGGER.debug("processError()");
+		LOGGER.info("processError()");
 	}
 
 	@Override
 	public void processInfo(String info) {
-		LOGGER.debug("processInfo()");
+		LOGGER.info("processInfo()");
 	}
 
 	/**
@@ -199,7 +205,7 @@ public class UserAgentServer implements MessageProcessor,IUAS {
 		// <- 180 Ringing
 		// <- 200 OK
 		// ACK ->
-		LOGGER.debug("processInvite()");
+		LOGGER.info("processInvite()");
 		ServerTransaction serverTransaction = requestEvent.getServerTransaction();
 		if (serverTransaction == null)
 			try {
@@ -211,7 +217,7 @@ public class UserAgentServer implements MessageProcessor,IUAS {
 			}
 		// if not registered at the proxy decline his invite
 		if (isRegisteredAtProxy == false) {
-			LOGGER.debug("Declining invite from unregistered proxy!");
+			LOGGER.info("Declining invite from unregistered proxy!");
 			try {
 			Response response = sipLayer.createResponse(Response.DECLINE, requestEvent.getRequest());
 			response.addHeader(contactHeader);			
@@ -230,7 +236,7 @@ public class UserAgentServer implements MessageProcessor,IUAS {
 				Response ok = sipLayer.createResponse(Response.OK, requestEvent.getRequest());
 				ok.addHeader(contactHeader);
 				serverTransaction.sendResponse(ok);
-				LOGGER.debug("Sent OK: " + ok.toString());
+				LOGGER.info("Sent OK: " + ok.toString());
 				// wait for ACK
 				String dialogId = serverTransaction.getDialog().getDialogId();
 				inactiveDialogs.add(dialogId);
@@ -247,7 +253,7 @@ public class UserAgentServer implements MessageProcessor,IUAS {
 
 	@Override
 	public void processMessage(String sender, String message) {
-		LOGGER.debug("processMessage()");
+		LOGGER.info("processMessage()");
 	}
 
 	/**
@@ -260,12 +266,12 @@ public class UserAgentServer implements MessageProcessor,IUAS {
 		// UAS - Proxy
 		// REGISTER ->
 		// <- 200 OK
-		LOGGER.debug("processOK()");
+		LOGGER.info("processOK()");
 		String responseId = responseEvent.getDialog().getDialogId();
-		LOGGER.debug("DialogId: " + responseId);
+		LOGGER.info("DialogId: " + responseId);
 		CallIdHeader callIdHeader = (CallIdHeader) responseEvent.getResponse().getHeader(CallIdHeader.NAME);
 		String callIdResponse = callIdHeader.getCallId();
-		LOGGER.debug("CallId: " + callIdResponse);
+		LOGGER.info("CallId: " + callIdResponse);
 		// not registered and callId is the one from the registration at the proxy
 		if (isRegisteredAtProxy == false && callIdProxy.equals(callIdResponse)) {
 			LOGGER.debug("Registration successful!");
@@ -275,11 +281,11 @@ public class UserAgentServer implements MessageProcessor,IUAS {
 
 	@Override
 	public void processRinging() {
-		LOGGER.debug("processRinging()");
+		LOGGER.info("processRinging()");
 	}
 
 	@Override
 	public void processTrying() {
-		LOGGER.debug("processTrying()");
+		LOGGER.info("processTrying()");
 	}
 }

@@ -1,4 +1,4 @@
-package dev2dev.sip;
+package sip;
 
 import java.text.ParseException;
 import java.util.ArrayList;

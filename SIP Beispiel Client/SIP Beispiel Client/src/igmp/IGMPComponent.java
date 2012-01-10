@@ -1,4 +1,4 @@
-package dev2dev.igmp;
+package igmp;
 
 import java.net.DatagramPacket;
 import java.net.InetAddress;
@@ -6,7 +6,7 @@ import java.net.MulticastSocket;
 
 public abstract class IGMPComponent implements Runnable {
 
-	// Grš§e der erwarteten Pakete
+	// Grï¿½ï¿½e der erwarteten Pakete
 	public static final int PACKETSIZE = 257;
 
 	protected MulticastSocket mSocket;
@@ -25,13 +25,13 @@ public abstract class IGMPComponent implements Runnable {
 		mSocket = null;
 		isRunning = true;
 
-		// Buffer fŸr Pakete und passendes Datagramobjekt erzeugen
+		// Buffer fï¿½r Pakete und passendes Datagramobjekt erzeugen
 		buf = new byte[PACKETSIZE];
 
 	}
 
 	/**
-	 * Setzt das isRunning-Flag und sorgt dafŸr, dass
+	 * Setzt das isRunning-Flag und sorgt dafï¿½r, dass
 	 * der Thread stoppt wird.
 	 */
 	public void stop() {

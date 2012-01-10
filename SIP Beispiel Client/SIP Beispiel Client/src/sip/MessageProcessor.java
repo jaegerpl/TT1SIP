@@ -1,4 +1,4 @@
-package dev2dev.sip;
+package sip;
 
 import javax.sip.DialogTerminatedEvent;
 import javax.sip.RequestEvent;
