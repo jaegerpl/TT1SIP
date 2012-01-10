@@ -275,7 +275,7 @@ public class TextClient extends JFrame implements MessageProcessor {
 	 */
 	private void joinIGMPGroup() {
 		if (joinIGMPButton.getText() == "JoinGroup") {
-			System.out.println("Joining Group...");
+			LOGGER.info("Joining Group...");
 			// Join IGMP Group
 			try {
 				igmpListener.initialize(
@@ -290,10 +290,10 @@ public class TextClient extends JFrame implements MessageProcessor {
 			joinIGMPButton.setText("LeaveGroup");
 			System.out.println("Done. Group Joined");
 		} else if (joinIGMPButton.getText() == "LeaveGroup") {
-			System.out.println("Leaving Group.");
+			LOGGER.info("Leaving Group.");
 			igmpListener.stop();
 			joinIGMPButton.setText("JoinGroup");
-			System.out.println("Done leavig Group.");
+			LOGGER.info("Done leavig Group.");
 		}
 	}
 
@@ -302,15 +302,15 @@ public class TextClient extends JFrame implements MessageProcessor {
 	}
 
 	public void processAck(RequestEvent requestEvent) {
-		LOGGER.info("processAck()");
+		LOGGER.debug("processAck()");
 	}
 
 	public void processBye(RequestEvent requestEvent) {
-		LOGGER.info("processBye()");
+		LOGGER.debug("processBye()");
 	}
 
 	public void processDialogTerminated(DialogTerminatedEvent dte) {
-		LOGGER.info("processDialogTerminated()");
+		LOGGER.debug("processDialogTerminated()");
 	}
 
 	public void processError(String errorMessage) {
@@ -322,7 +322,7 @@ public class TextClient extends JFrame implements MessageProcessor {
 	}
 
 	public void processInvite(RequestEvent requestEvent) {
-		LOGGER.info("processInvite()");
+		LOGGER.debug("processInvite()");
 	}
 
 	public void processOK(ResponseEvent responseEvent) {
@@ -357,7 +357,7 @@ public class TextClient extends JFrame implements MessageProcessor {
 		// OK  <-
 		if (cseq.getMethod().equals(Request.BYE)) {
 			dataModel.disconnectServer(dia);		
-			LOGGER.info("Receiving OK after BYE from server"+ dia);		
+			LOGGER.debug("Receiving OK after BYE from server"+ dia);		
 					
 			dataModel.removeServer(dia);
 			toAddress.setText("");
@@ -366,11 +366,11 @@ public class TextClient extends JFrame implements MessageProcessor {
 	}
 
 	public void processRinging() {
-		LOGGER.info("processRinging()");
+		LOGGER.debug("processRinging()");
 	}
 
 	public void processTrying() {
-		LOGGER.info("processTrying()");
+		LOGGER.debug("processTrying()");
 	}
     
 
