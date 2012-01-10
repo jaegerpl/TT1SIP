@@ -1,4 +1,4 @@
-package textclient;
+package client;
 
 import igmp.IGMPListener;
 
@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.text.ParseException;
-import java.util.ArrayList;
 
 import org.apache.log4j.Logger;
 
@@ -27,27 +26,20 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
-import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.ListSelectionModel;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
 
 import sip.MessageProcessor;
 import sip.SipLayer;
-import textclient.ClientControll.Pair;
 
 //public class TextClient extends JFrame implements MessageProcessor, TableModelListener {
-public class TextClient extends JFrame implements MessageProcessor {
+public class UserAgentClient extends JFrame implements MessageProcessor {
 
-	private static final Logger LOGGER = Logger.getLogger(TextClient.class);
+	private static final Logger LOGGER = Logger.getLogger(UserAgentClient.class);
 
 	private SipLayer sipLayer;
 	
-	ClientControll dataModel;
+	ClientControl dataModel;
 
 	// GUI STUFF
 	private JTextField fromAddress;
@@ -85,7 +77,7 @@ public class TextClient extends JFrame implements MessageProcessor {
 
 			// Starting TextClient
 			SipLayer sipLayer = new SipLayer(username, ip, port);
-			TextClient tc = new TextClient(sipLayer);
+			UserAgentClient tc = new UserAgentClient(sipLayer);
 			sipLayer.addMessageProcessor(tc);
 
 			tc.show();
@@ -106,10 +98,10 @@ public class TextClient extends JFrame implements MessageProcessor {
 		System.out.println("  java -jar textclient.jar snoopy71 5061");
 	}
 
-	public TextClient(SipLayer sip) {
+	public UserAgentClient(SipLayer sip) {
 		super();
 		sipLayer = sip;
-		dataModel = new ClientControll(this);
+		dataModel = new ClientControl(this);
 //		dataModel.setValueAt("hurz", 0, 0);
 		initWindow();
 		String from = "sip:" + sip.getUsername() + "@" + sip.getHost() + ":"
@@ -222,7 +214,7 @@ public class TextClient extends JFrame implements MessageProcessor {
 		Dialog dialog;
 		String server = toAddress.getText();
 		if(server.equals("")){
-			LOGGER.info("Kein Server ausgewŠhlt zum disconnecten");
+			LOGGER.info("Kein Server ausgewï¿½hlt zum disconnecten");
 		}
 		else {
 			dialog = dataModel.getServerDialog(server);			
@@ -262,7 +254,7 @@ public class TextClient extends JFrame implements MessageProcessor {
 				e.printStackTrace();
 			}
 		} else {
-			LOGGER.info("Kein Server zum connecten ausgewŠhlt.");
+			LOGGER.info("Kein Server zum connecten ausgewï¿½hlt.");
 		}
 	}
 

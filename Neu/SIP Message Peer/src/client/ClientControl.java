@@ -1,7 +1,7 @@
 /**
  * 
  */
-package textclient;
+package client;
 
 import java.util.ArrayList;
 import java.util.Map.Entry;
@@ -18,7 +18,7 @@ import javax.swing.table.AbstractTableModel;
  * @author Pascal
  *
  */
-public class ClientControll extends AbstractTableModel{
+public class ClientControl extends AbstractTableModel{
 
 	// servers that have been send an INVITE
 	private ArrayList<Pair> knownServers = new ArrayList<Pair>();
@@ -32,9 +32,9 @@ public class ClientControll extends AbstractTableModel{
 	// list of connected servers for the GUI
 	private ArrayList<String> serverTable = new ArrayList<String>();
 
-	private TextClient client;
+	private UserAgentClient client;
 
-	public ClientControll(TextClient client){
+	public ClientControl(UserAgentClient client){
 		this.client = client;
 //		this.addTableModelListener(client);
 	}

@@ -6,11 +6,12 @@ import java.net.InetAddress;
 import java.net.MulticastSocket;
 import org.apache.log4j.Logger;
 
-import textclient.TextClient;
+import client.UserAgentClient;
+
 
 public class IGMPListener extends IGMPComponent{
 	
-	private TextClient gui; // The gui where the received messages are displayed
+	private UserAgentClient gui; // The gui where the received messages are displayed
 
 	// Name des Loggers
 	public static final String TAG = "IGMPListener";
@@ -25,7 +26,7 @@ public class IGMPListener extends IGMPComponent{
 	 * @param port			Port auf den 
 	 * @throws IOException  Fehler beim erzeugen des IPAdressen-Objekts oder Port
 	 */
-	public void initialize(InetAddress ip, int port, TextClient gui) throws IOException{
+	public void initialize(InetAddress ip, int port, UserAgentClient gui) throws IOException{
 
 		this.gui = gui;
 		// Socket anlegen und Gruppe joinen
@@ -34,7 +35,7 @@ public class IGMPListener extends IGMPComponent{
 
 		mSocket.joinGroup(mcastAdr);
 
-		// IP und Port fŸr spŠter speichern
+		// IP und Port fï¿½r spï¿½ter speichern
 		mcastAdr = ip;
 		this.port = port;
 		pack = new DatagramPacket(buf, buf.length);
