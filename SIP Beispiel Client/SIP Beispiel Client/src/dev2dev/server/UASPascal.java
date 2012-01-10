@@ -68,7 +68,7 @@ public class UASPascal implements MessageProcessor, IUAS {
 			igmpsender.initialize(InetAddress.getByName("239.238.237.17"), 9017, this);
 			Thread t = new Thread(igmpsender);
 			t.start();
-			LOGGER.debug("IGMPSender gestartet");
+			LOGGER.info("IGMPSender gestartet");
 			contactHeader = sipLayer.getContactHeader();		
 			callIdProxy = sipLayer.register(PROXY_ADDRESS);
 			LOGGER.info("SipLayer am Proxy registriert");
@@ -109,7 +109,7 @@ public class UASPascal implements MessageProcessor, IUAS {
 		// INVITE ->
 		// <- 200 OK
 		// ACK ->
-		LOGGER.info("processAck()");
+		LOGGER.debug("processAck()");
 		Dialog dialog = requestEvent.getDialog();
 		String dialogId = dialog.getDialogId();
 		// sender is known and waiting to establish a dialog
@@ -147,7 +147,7 @@ public class UASPascal implements MessageProcessor, IUAS {
 		// Proxy - UAS
 		// BYE ->
 		// <- 200 OK
-		LOGGER.info("processBye()");
+		LOGGER.debug("processBye()");
 		String dialogId = requestEvent.getDialog().getDialogId();
 		// confirms BYE with OK
 		if (activeDialogs.contains(dialogId)) {
@@ -157,7 +157,7 @@ public class UASPascal implements MessageProcessor, IUAS {
 				ServerTransaction serverTransaction = requestEvent.getServerTransaction();
 				if (serverTransaction == null) serverTransaction = sipLayer.getNewServerTransaction(requestEvent.getRequest());
 				serverTransaction.sendResponse(response);
-				LOGGER.info("Sent OK: " + response.toString());
+				LOGGER.debug("Sent OK: " + response.toString());
 			} catch (InvalidArgumentException e) {
 				e.printStackTrace();
 			} catch (ParseException e) {
@@ -175,19 +175,20 @@ public class UASPascal implements MessageProcessor, IUAS {
 	 */
 	@Override
 	public void processDialogTerminated(DialogTerminatedEvent dialogTerminatedEvent) {
-		LOGGER.info("processDialogTerminated()");
-		String dialogId = dialogTerminatedEvent.getDialog().getDialogId();
+		Dialog dialog = dialogTerminatedEvent.getDialog();
+		String dialogId = dialog.getDialogId();
 		activeDialogs.remove(dialogId);
+		LOGGER.info("DialogTerminated: "+dialog.getRemoteParty());
 	}
 
 	@Override
 	public void processError(String error) {
-		LOGGER.info("processError()");
+		LOGGER.debug("processError()");
 	}
 
 	@Override
 	public void processInfo(String info) {
-		LOGGER.info("processInfo()");
+		LOGGER.debug("processInfo()");
 	}
 
 	/**
@@ -203,7 +204,7 @@ public class UASPascal implements MessageProcessor, IUAS {
 		// <- 180 Ringing
 		// <- 200 OK
 		// ACK ->
-		LOGGER.info("processInvite()");
+		LOGGER.debug("processInvite()");
 		ServerTransaction serverTransaction = requestEvent.getServerTransaction();
 		if (serverTransaction == null)
 			try {
@@ -234,7 +235,7 @@ public class UASPascal implements MessageProcessor, IUAS {
 				Response ok = sipLayer.createResponse(Response.OK, requestEvent.getRequest());
 				ok.addHeader(contactHeader);
 				serverTransaction.sendResponse(ok);
-				LOGGER.info("Sent OK: " + ok.toString());
+				LOGGER.debug("Sent OK: " + ok.toString());
 				// wait for ACK
 				String dialogId = serverTransaction.getDialog().getDialogId();
 				inactiveDialogs.add(dialogId);
@@ -251,7 +252,7 @@ public class UASPascal implements MessageProcessor, IUAS {
 
 	@Override
 	public void processMessage(String sender, String message) {
-		LOGGER.info("processMessage()");
+		LOGGER.debug("processMessage()");
 	}
 
 	/**
@@ -266,14 +267,17 @@ public class UASPascal implements MessageProcessor, IUAS {
 		// <- 200 OK
 		LOGGER.info("processOK()");
 		String responseId = responseEvent.getDialog().getDialogId();
-		LOGGER.info("DialogId: " + responseId);
+		LOGGER.debug("DialogId: " + responseId);
 		CallIdHeader callIdHeader = (CallIdHeader) responseEvent.getResponse().getHeader(CallIdHeader.NAME);
 		String callIdResponse = callIdHeader.getCallId();
-		LOGGER.info("CallId: " + callIdResponse);
+		LOGGER.debug("CallId: " + callIdResponse);
 		// not registered and callId is the one from the registration at the proxy
-		if (isRegisteredAtProxy == false && callIdProxy.equals(callIdResponse)) {
-			LOGGER.debug("Registration successful!");
-			isRegisteredAtProxy = true;
+		if (isRegisteredAtProxy == false){
+			LOGGER.info("not registered at Proxy");
+			if(callIdProxy.equals(callIdResponse)) {
+				LOGGER.info("Registration successful!");
+				isRegisteredAtProxy = true;
+			}			
 		}		
 	}
 
